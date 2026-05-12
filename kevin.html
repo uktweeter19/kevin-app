@@ -1254,6 +1254,14 @@ window.syncMyFoodsToCloud=cloudSaveFood;
 
 // Barcode Scanner
 var zxingReader=null;
+function stopCamera(){
+  if(zxingReader){try{zxingReader.reset();}catch(e){}zxingReader=null;}
+  var video=gel("scanner-video");
+  if(video&&video.srcObject){
+    try{video.srcObject.getTracks().forEach(function(t){t.stop();});}catch(e){}
+    video.srcObject=null;
+  }
+}
 function openScanner(){
   if(!window.ZXingBrowser){showToast("Scanner not loaded - check connection");return;}
   var modal=gel("scanner-modal");if(!modal)return;
@@ -1264,7 +1272,7 @@ function openScanner(){
     zxingReader.decodeFromVideoDevice(undefined,"scanner-video",function(result,err){
       if(result){
         var code=result.getText();
-        if(zxingReader){try{zxingReader.reset();}catch(e){}}
+        stopCamera();
         gel("scanner-status").textContent="Looking up "+code+"...";
         lookupBarcode(code);
       }
@@ -1272,7 +1280,7 @@ function openScanner(){
   }catch(e){gel("scanner-status").textContent="Scanner error: "+(e.message||e);}
 }
 function closeScanner(){
-  if(zxingReader){try{zxingReader.reset();}catch(e){}zxingReader=null;}
+  stopCamera();
   var modal=gel("scanner-modal");if(modal)modal.style.display="none";
 }
 function lookupBarcode(code){
