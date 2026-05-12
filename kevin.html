@@ -188,6 +188,7 @@ button:active{opacity:.92}
 <div id="plansum" style="margin-top:12px"></div>
 <div id="bwh" style="font-size:12px;color:var(--acc);margin-top:12px;line-height:1.5;display:none">Enter your weight, target weight, and target date to get a personalized fat-loss plan.</div>
 </div>
+<div class="sl">This Week</div><div class="card cp" id="week-summary"></div>
 <div class="sl">Fat-Loss Goals</div><div class="card" style="padding:4px 16px" id="goals"></div>
 <div class="sl" id="rech" style="display:none">Recent Workouts</div><div id="reclist"></div>
 </div>
@@ -278,6 +279,21 @@ button:active{opacity:.92}
 <div class="sl" id="fast-hist-hdr" style="display:none">Recent Fasts</div>
 <div id="fast-history"></div>
 </div>
+<div class="page" id="p-drinks">
+<div class="sl">Alcohol Tracker</div>
+<div class="hero" id="drinks-hero"><div class="hbg"></div><div class="hst"></div><div class="hin" id="drinks-hero-in"></div></div>
+<div class="sl">Quick Log</div>
+<div class="card" id="drinks-presets" style="padding:10px"></div>
+<div class="sl">Today</div>
+<div class="card" id="drinks-today" style="padding:4px 0"></div>
+<div class="sl">Settings</div>
+<div class="card cp" style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+<div><div style="font-weight:600;font-size:13px">Weekly limit</div><div style="font-size:11px;color:var(--mut2);margin-top:2px">Cap before warnings show on home</div></div>
+<input id="drinks-limit" type="number" min="0" max="20" style="width:60px;text-align:center" oninput="saveDrinkLimit()">
+</div>
+<div class="sl" id="drinks-hist-hdr" style="display:none">Recent (30 days)</div>
+<div id="drinks-history"></div>
+</div>
 </div>
 <div id="scanner-modal" style="display:none;position:fixed;inset:0;background:#000;z-index:100;flex-direction:column">
 <div style="padding:max(40px,env(safe-area-inset-top)) 16px 12px;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.85)">
@@ -299,6 +315,7 @@ button:active{opacity:.92}
 <button class="nb" id="n-water" onclick="goTo('water')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>Hydrate</button>
 <button class="nb" id="n-fast" onclick="goTo('fast')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12M6 22h12M7 2v2c0 3 3 4 3 8s-3 5-3 8v2M17 2v2c0 3-3 4-3 8s3 5 3 8v2"/></svg>Fast</button>
 <button class="nb" id="n-fuel" onclick="goTo('fuel')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3a2 2 0 014 0c0 1-1 2-1 3 4 0 7 3 7 7 0 4-3 7-5 7s-3-1-4-1-2 1-4 1-5-3-5-7c0-4 3-7 7-7 0-1-1-2-1-3z"/></svg>Fuel</button>
+<button class="nb" id="n-drinks" onclick="goTo('drinks')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M5 3h14l-2 9a5 5 0 01-10 0L5 3z"/></svg>Drinks</button>
 </nav></div>
 <script>
 const FOOD_DB=[
@@ -479,6 +496,7 @@ function goTo(page){
   else if(page==="water")renderWater();
   else if(page==="fuel")renderFuel();
   else if(page==="fast")renderFast();
+  else if(page==="drinks")renderDrinks();
   else if(page==="history")renderHistory();
   window.scrollTo(0,0);
 }
@@ -1186,7 +1204,11 @@ function getPlanData(){
   var dailyDeficitNeeded=Math.round(totalDeficitCal/days);
   var dailyDeficit=Math.min(dailyDeficitNeeded,1000);
   var maintenance=Math.round(bw*14);
-  var dailyCal=Math.max(1500,maintenance-dailyDeficit);
+  var baseDailyCal=Math.max(1500,maintenance-dailyDeficit);
+  // Alcohol adjustment: spread this week's alcohol calories across the 7-day target
+  var weekAlcCal=(typeof getWeekDrinks==="function")?getWeekDrinks().reduce(function(s,d){return s+d.calories;},0):0;
+  var alcAdjPerDay=Math.round(weekAlcCal/7);
+  var dailyCal=Math.max(1500,baseDailyCal-alcAdjPerDay);
   var actualRate=Math.round((dailyDeficit*7/3500)*10)/10;
   var actualLossByDate=Math.min(lbsToLose,actualRate*weeks);
   var projectedFinalWeight=Math.round(bw-actualLossByDate);
@@ -1194,7 +1216,8 @@ function getPlanData(){
     days:days,weeks:weeks,lbsToLose:lbsToLose,tgt:tgt,bw:bw,
     requiredRate:Math.round(requiredRate*10)/10,
     safeMax:Math.round(safeMax*10)/10,safe:safe,
-    dailyCal:dailyCal,dailyDeficit:dailyDeficit,maintenance:maintenance,
+    dailyCal:dailyCal,baseDailyCal:baseDailyCal,alcAdj:alcAdjPerDay,weekAlcCal:weekAlcCal,
+    dailyDeficit:dailyDeficit,maintenance:maintenance,
     actualRate:actualRate,projectedFinalWeight:projectedFinalWeight,
     targetDate:tdate
   };
@@ -1225,6 +1248,8 @@ function renderPlanSum(){
     ?"<span style='background:rgba(34,197,94,0.15);color:#22c55e;padding:3px 9px;border-radius:6px;font-size:10px;font-weight:600;margin-left:8px;letter-spacing:0.3px'>SAFE PACE</span>"
     :"<span style='background:rgba(248,113,113,0.15);color:#f87171;padding:3px 9px;border-radius:6px;font-size:10px;font-weight:600;margin-left:8px;letter-spacing:0.3px'>CAPPED</span>";
   var warning=plan.safe?"":"<div style='background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.25);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:#fca5a5;line-height:1.5'>To stay safe, this plan caps weight loss at 2 lbs/week. At this pace you will reach <b>"+plan.projectedFinalWeight+" lbs</b> by "+formatDate(plan.targetDate)+". Push the target date out to hit "+plan.tgt+" lbs sustainably.</div>";
+  var calLabel=plan.alcAdj>0?"Daily cal (adj)":"Daily calories";
+  var calValue=plan.alcAdj>0?plan.dailyCal+" / "+plan.baseDailyCal:plan.dailyCal+" kcal";
   el.innerHTML="<div style='background:linear-gradient(135deg,var(--acc-bg),var(--acc2-bg));border:1px solid var(--bor2);border-radius:14px;padding:16px;box-shadow:var(--shadow)'>"
     +"<div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:12px'>"
       +"<div style='font-weight:600;font-size:14px;display:flex;align-items:center'>Your Plan"+safeBadge+"</div>"
@@ -1232,11 +1257,12 @@ function renderPlanSum(){
     +"</div>"
     +warning
     +"<div style='display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px'>"
-      +planStatBox("Daily calories",plan.dailyCal+" kcal")
+      +planStatBox(calLabel,calValue)
       +planStatBox("Daily deficit",plan.dailyDeficit+" cal")
       +planStatBox("Pace",plan.actualRate+" lbs/wk")
       +planStatBox("Lbs to lose",plan.lbsToLose.toFixed(1)+" lbs")
     +"</div>"
+    +(plan.alcAdj>0?"<div style='background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:var(--mut2);line-height:1.4'><span style='color:var(--acc2);font-weight:600'>\ud83c\udf77 -"+plan.alcAdj+" cal/day adjustment</span> from "+plan.weekAlcCal+" cal of alcohol this week, spread across 7 days to stay on pace.</div>":"")
     +"<div style='font-size:11px;color:var(--mut);text-align:center;line-height:1.5'>Target: <b style='color:var(--fg)'>"+plan.tgt+" lbs by "+formatDate(plan.targetDate)+"</b></div>"
   +"</div>";
 }
@@ -1253,7 +1279,44 @@ function renderHome(){
   gel("hdr-sub").textContent="Fat Loss & Definition"+(bw?" · "+bw+" lbs":"")+(ST.height?" · "+ST.height:"");
   gel("bwh").style.display=bw?"none":"block";
   renderHomeFastStrip();
-  renderBFInline();renderWeightProg();renderPlanSum();renderHomeGlance();renderGoalsList();renderRecent();
+  renderBFInline();renderWeightProg();renderPlanSum();renderHomeGlance();renderWeekSummary();renderGoalsList();renderRecent();
+}
+function renderWeekSummary(){
+  var el=gel("week-summary");if(!el)return;
+  var wm=getWeekMacros();
+  var weekDrinks=getWeekDrinks();
+  var weekDrinkCal=weekDrinks.reduce(function(s,d){return s+d.calories;},0);
+  var streak=getDryStreak();
+  // Daily targets from plan
+  var plan=typeof getPlanData==="function"?getPlanData():null;
+  var dailyCal=plan&&plan.dailyCal?plan.dailyCal:null;
+  var dailyPro=plan&&plan.protein?plan.protein:null;
+  var weekCalTarget=dailyCal?dailyCal*7:null;
+  var weekProTarget=dailyPro?dailyPro*7:null;
+  var calPct=weekCalTarget?Math.min(100,Math.round(wm.cal/weekCalTarget*100)):null;
+  var proPct=weekProTarget?Math.min(100,Math.round(wm.pro/weekProTarget*100)):null;
+  var avgCal=wm.days?Math.round(wm.cal/wm.days):0;
+  var drinkOver=weekDrinks.length>DRSET.weeklyLimit;
+  var drinkPct=Math.min(100,Math.round(weekDrinks.length/Math.max(DRSET.weeklyLimit,1)*100));
+  var drinkCol=drinkOver?"#f87171":weekDrinks.length>=DRSET.weeklyLimit?"#facc15":"var(--acc2)";
+  var html="<div style='display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px'>"
+    +"<div style='font-size:11px;color:var(--mut);letter-spacing:1.2px;text-transform:uppercase;font-weight:500'>Days Logged</div>"
+    +"<div style='font-family:var(--body);font-weight:700;font-size:18px'>"+wm.days+"<span style='color:var(--mut);font-weight:400;font-size:13px'> / 7</span></div>"
+    +"</div>";
+  if(dailyCal){
+    html+="<div style='margin-bottom:12px'><div style='display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px'><span style='color:var(--mut2);font-weight:500'>Calories</span><span style='font-weight:600'>"+wm.cal.toLocaleString()+" <span style='color:var(--mut);font-weight:400'>/ "+weekCalTarget.toLocaleString()+"</span></span></div><div style='height:5px;border-radius:3px;background:rgba(255,255,255,0.05);overflow:hidden'><div style='height:100%;width:"+calPct+"%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:3px'></div></div></div>";
+  }
+  if(dailyPro){
+    html+="<div style='margin-bottom:12px'><div style='display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px'><span style='color:var(--mut2);font-weight:500'>Protein</span><span style='font-weight:600'>"+wm.pro+"g <span style='color:var(--mut);font-weight:400'>/ "+weekProTarget+"g</span></span></div><div style='height:5px;border-radius:3px;background:rgba(255,255,255,0.05);overflow:hidden'><div style='height:100%;width:"+proPct+"%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:3px'></div></div></div>";
+  }
+  html+="<div style='margin-bottom:6px'><div style='display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px'><span style='color:var(--mut2);font-weight:500'>Drinks</span><span style='font-weight:600;color:"+(drinkOver?"#f87171":"var(--fg)")+"'>"+weekDrinks.length+" <span style='color:var(--mut);font-weight:400'>/ "+DRSET.weeklyLimit+"</span>"+(weekDrinkCal?"<span style='color:var(--mut);font-weight:400;margin-left:4px'>&middot; "+weekDrinkCal+" cal</span>":"")+"</span></div><div style='height:5px;border-radius:3px;background:rgba(255,255,255,0.05);overflow:hidden'><div style='height:100%;width:"+drinkPct+"%;background:"+drinkCol+";border-radius:3px'></div></div></div>";
+  if(wm.days){
+    html+="<div style='margin-top:14px;padding-top:12px;border-top:1px solid var(--bor);display:flex;justify-content:space-between;font-size:11px;color:var(--mut2)'>"
+      +"<div><b style='color:var(--fg);font-weight:600'>"+avgCal.toLocaleString()+"</b> avg cal/day</div>";
+    if(streak<999)html+="<div><b style='color:var(--fg);font-weight:600'>"+streak+"</b> day"+(streak===1?"":"s")+" dry"+(streak>=7?" 🔥":"")+"</div>";
+    html+="</div>";
+  }
+  el.innerHTML=html;
 }
 function renderHomeFastStrip(){
   var el=gel("home-fast");if(!el)return;
@@ -1433,6 +1496,186 @@ var RP=loadKey(PFX+'runprs',{});
 var ML=loadKey(PFX+'meals',{});
 var EW=loadKey(PFX+'exweights',{});
 var MY_FOODS=loadKey(PFX+'myfoods',[]);
+
+// Drinks / Alcohol
+var DR=loadKey(PFX+'drinks',[]);
+var DRSET=loadKey(PFX+'drinkset_v2',{weeklyLimit:14});
+var DRINK_PRESETS=[
+  {n:"Bourbon Old Fashioned",c:180},
+  {n:"Bourbon Neat (1.5oz)",c:100},
+  {n:"Vodka Soda",c:100},
+  {n:"IPA / Craft Beer (12oz)",c:220},
+  {n:"Light Beer (12oz)",c:100},
+  {n:"Regular Beer (12oz)",c:150},
+  {n:"Red Wine (5oz)",c:125},
+  {n:"White Wine (5oz)",c:120},
+  {n:"Margarita",c:300},
+  {n:"White Claw / Seltzer",c:100}
+];
+function startOfWeek(date){
+  var d=new Date(date);
+  var day=d.getDay();
+  var diff=day===0?-6:1-day;
+  d.setDate(d.getDate()+diff);d.setHours(0,0,0,0);
+  return d;
+}
+function dateKey(date){
+  return date.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+}
+function getWeekDrinks(){
+  var sow=startOfWeek(new Date()).getTime();
+  return DR.filter(function(d){return d.ts>=sow;});
+}
+function getDryStreak(){
+  if(!DR.length)return 999;
+  var last=DR[0].ts;
+  var hoursSince=(Date.now()-last)/3600000;
+  return Math.floor(hoursSince/24);
+}
+function getWeekMacros(){
+  var sow=startOfWeek(new Date());
+  var totalCal=0,totalPro=0,totalCarb=0,totalFat=0,daysLogged=0;
+  for(var i=0;i<7;i++){
+    var d=new Date(sow.getTime()+i*86400000);
+    var k=dateKey(d);
+    var day=ML[k];
+    if(day&&day.entries&&day.entries.length){
+      daysLogged++;
+      day.entries.forEach(function(e){
+        totalCal+=parseFloat(e.cal)||0;
+        totalPro+=parseFloat(e.p)||0;
+        totalCarb+=parseFloat(e.c)||0;
+        totalFat+=parseFloat(e.f)||0;
+      });
+    }
+  }
+  return{cal:Math.round(totalCal),pro:Math.round(totalPro),carb:Math.round(totalCarb),fat:Math.round(totalFat),days:daysLogged};
+}
+function tomorrowFastType(){
+  var tomorrow=new Date(Date.now()+86400000);
+  var monthly=getMonthly48hForDate(tomorrow);
+  if(monthly)return monthly;
+  return FS[DAY_KEYS[tomorrow.getDay()]]||"free";
+}
+function logDrink(name,cal){
+  var tf=tomorrowFastType();
+  if(tf==="24h"||tf==="48h-d1"||tf==="48h-d2"){
+    if(!confirm("Heads up - "+FAST_TYPE_INFO[tf].label+" scheduled tomorrow. Alcohol the night before disrupts the fast benefits. Log anyway?"))return;
+  }
+  var now=new Date();
+  DR.unshift({id:Date.now(),name:name,calories:cal,ts:Date.now(),date:dateKey(now),time:now.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})});
+  if(DR.length>200)DR=DR.slice(0,200);
+  saveKey(PFX+"drinks",DR);
+  // Add to food log so macros stay accurate
+  var dk=dateKey(now);
+  if(!ML[dk])ML[dk]={entries:[]};
+  if(!ML[dk].entries)ML[dk].entries=[];
+  ML[dk].entries.unshift({id:Date.now()+"-d",name:"\ud83c\udf77 "+name,cal:cal,p:0,c:0,f:0,fiber:0,sugar:0,sodium:0,kind:"alcohol"});
+  saveKey(PFX+"meals",ML);
+  showToast("DRINK LOGGED");
+  if(CV==="drinks")renderDrinks();
+  if(CV==="home")renderHome();
+  if(CV==="fuel")renderFuel();
+}
+function removeDrink(id){
+  if(!confirm("Remove this drink?"))return;
+  var found=DR.find(function(d){return d.id===id;});
+  DR=DR.filter(function(d){return d.id!==id;});
+  saveKey(PFX+"drinks",DR);
+  // Remove paired food log entry
+  if(found){
+    for(var k in ML){
+      if(ML[k].entries){
+        ML[k].entries=ML[k].entries.filter(function(e){return e.id!==id+"-d";});
+      }
+    }
+    saveKey(PFX+"meals",ML);
+  }
+  showToast("REMOVED");
+  renderDrinks();if(CV==="home")renderHome();if(CV==="fuel")renderFuel();
+}
+function saveDrinkLimit(){
+  var v=parseInt(gel("drinks-limit").value);
+  if(isNaN(v)||v<0)v=14;
+  DRSET.weeklyLimit=v;
+  saveKey(PFX+"drinkset_v2",DRSET);
+  if(CV==="drinks")renderDrinks();
+  if(CV==="home")renderHome();
+}
+function logCustomDrink(){
+  var name=prompt("Drink name:");
+  if(!name)return;
+  var cal=prompt("Calories:");
+  if(!cal)return;
+  var calN=parseInt(cal);
+  if(isNaN(calN)||calN<0){showToast("Invalid calories");return;}
+  logDrink(name,calN);
+}
+function renderDrinks(){
+  var weekDrinks=getWeekDrinks();
+  var weekCal=weekDrinks.reduce(function(s,d){return s+d.calories;},0);
+  var streak=getDryStreak();
+  var pct=Math.min(100,Math.round(weekDrinks.length/DRSET.weeklyLimit*100));
+  var overLimit=weekDrinks.length>DRSET.weeklyLimit;
+  var barCol=overLimit?"#f87171":weekDrinks.length>=DRSET.weeklyLimit?"#facc15":"var(--acc2)";
+  gel("drinks-hero-in").innerHTML="<div class='hero-eyebrow'>This Week</div>"
+    +"<div class='hero-title' style='margin-bottom:6px;display:flex;align-items:baseline;gap:8px'><span>"+weekDrinks.length+"</span><span style='font-size:18px;opacity:.5'>/ "+DRSET.weeklyLimit+" drinks</span></div>"
+    +"<div style='height:6px;border-radius:3px;background:rgba(255,255,255,0.06);overflow:hidden;margin-bottom:10px'><div style='height:100%;width:"+pct+"%;background:"+barCol+";transition:width .4s'></div></div>"
+    +"<div style='display:flex;gap:14px;font-size:11px;color:var(--mut2)'>"
+      +"<div><b style='color:var(--fg);font-weight:600'>"+weekCal+"</b> cal from drinks</div>"
+      +"<div><b style='color:var(--fg);font-weight:600'>"+(streak>=999?"--":streak)+"</b> day"+(streak===1?"":"s")+" dry"+(streak>=7?" 🔥":"")+"</div>"
+    +"</div>";
+  // Presets grid
+  var p=gel("drinks-presets");p.innerHTML="";
+  var grid=document.createElement("div");grid.style.cssText="display:grid;grid-template-columns:1fr 1fr;gap:8px";
+  DRINK_PRESETS.forEach(function(d){
+    var btn=document.createElement("button");
+    btn.style.cssText="background:rgba(255,255,255,0.04);border:1px solid var(--bor2);color:var(--fg);border-radius:10px;padding:10px 12px;font-family:var(--body);font-size:12px;font-weight:500;cursor:pointer;text-align:left;line-height:1.3";
+    btn.innerHTML="<div style='font-weight:600;font-size:13px;margin-bottom:2px'>"+d.n+"</div><div style='color:var(--mut);font-size:11px'>"+d.c+" cal</div>";
+    btn.onclick=(function(name,cal){return function(){logDrink(name,cal);};})(d.n,d.c);
+    grid.appendChild(btn);
+  });
+  p.appendChild(grid);
+  var custom=document.createElement("button");
+  custom.style.cssText="background:var(--acc-bg);border:1px dashed var(--acc-bor);color:var(--acc);border-radius:10px;padding:10px;font-family:var(--body);font-size:12px;font-weight:600;cursor:pointer;margin-top:8px;width:100%";
+  custom.textContent="+ Custom Drink";
+  custom.onclick=logCustomDrink;
+  p.appendChild(custom);
+  // Today list
+  var today=dateKey(new Date());
+  var todayDrinks=DR.filter(function(d){return d.date===today;});
+  var t=gel("drinks-today");t.innerHTML="";
+  if(!todayDrinks.length){
+    t.innerHTML="<div style='padding:18px;text-align:center;color:var(--mut);font-size:12px'>No drinks today</div>";
+  }else{
+    todayDrinks.forEach(function(d,i){
+      var row=document.createElement("div");
+      row.style.cssText="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:"+(i<todayDrinks.length-1?"1px solid var(--bor)":"none");
+      row.innerHTML="<div><div style='font-weight:600;font-size:13px'>"+d.name+"</div><div style='font-size:11px;color:var(--mut)'>"+d.time+" &middot; "+d.calories+" cal</div></div><button onclick='removeDrink("+d.id+")' style='background:none;border:1px solid var(--bor2);color:var(--mut);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer'>Remove</button>";
+      t.appendChild(row);
+    });
+  }
+  gel("drinks-limit").value=DRSET.weeklyLimit;
+  // History
+  var hdr=gel("drinks-hist-hdr"),hist=gel("drinks-history");
+  var last30=DR.filter(function(d){return (Date.now()-d.ts)<2592000000;});
+  if(!last30.length){hdr.style.display="none";hist.innerHTML="";return;}
+  hdr.style.display="block";
+  var byDate={};
+  last30.forEach(function(d){if(!byDate[d.date])byDate[d.date]=[];byDate[d.date].push(d);});
+  hist.innerHTML="";
+  var card=document.createElement("div");card.className="card";card.style.padding="4px 0";
+  var dateKeys=Object.keys(byDate);
+  dateKeys.forEach(function(dk,idx){
+    var drinks=byDate[dk];
+    var totalCal=drinks.reduce(function(s,d){return s+d.calories;},0);
+    var row=document.createElement("div");
+    row.style.cssText="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:"+(idx<dateKeys.length-1?"1px solid var(--bor)":"none");
+    row.innerHTML="<div><div style='font-weight:600;font-size:13px'>"+dk+"</div><div style='font-size:11px;color:var(--mut)'>"+drinks.map(function(d){return d.name;}).join(", ")+"</div></div><div style='text-align:right'><div style='font-family:var(--body);font-weight:700;font-size:16px;color:var(--acc)'>"+drinks.length+"</div><div style='font-size:10px;color:var(--mut)'>"+totalCal+" cal</div></div>";
+    card.appendChild(row);
+  });
+  hist.appendChild(card);
+}
 
 // Fasting
 var DEFAULT_FAST_SCHEDULE={Mon:"24h",Tue:"omad",Wed:"omad",Thu:"omad",Fri:"free",Sat:"free",Sun:"free"};
