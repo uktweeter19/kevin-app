@@ -93,6 +93,20 @@ textarea{resize:none}
 .q-btn--home svg{color:#22d3ee;opacity:1}
 .q-btn--family{background:linear-gradient(135deg,rgba(168,85,247,0.12),rgba(168,85,247,0.03));border-color:rgba(168,85,247,0.25)}
 .q-btn--family svg{color:var(--acc2);opacity:1}
+.fast-strip{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.04);border:1px solid var(--bor2);border-radius:12px;padding:11px 14px;margin-bottom:14px;cursor:pointer;text-align:left;width:100%;font-family:var(--body);color:var(--fg);transition:background .15s}
+.fast-strip:active{background:rgba(255,255,255,0.07)}
+.fast-strip svg{width:22px;height:22px;flex-shrink:0;stroke-width:1.6}
+.fast-strip__main{flex:1;min-width:0}
+.fast-strip__label{font-weight:600;font-size:14px;letter-spacing:-0.01em;display:flex;align-items:center;gap:6px}
+.fast-strip__sub{color:var(--mut2);font-size:11px;font-weight:400;margin-top:2px;line-height:1.4}
+.fast-strip__time{font-family:var(--display);font-weight:400;font-size:24px;letter-spacing:-0.02em;line-height:1;background:linear-gradient(135deg,var(--acc),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;flex-shrink:0}
+.fast-strip--active{background:linear-gradient(135deg,rgba(250,204,21,0.12),rgba(168,85,247,0.06));border-color:rgba(250,204,21,0.28)}
+.fast-strip--active svg{color:var(--acc)}
+.fast-strip--monthly{background:linear-gradient(135deg,var(--acc2-bg),rgba(168,85,247,0.04));border-color:rgba(168,85,247,0.25)}
+.fast-strip--monthly svg{color:var(--acc2)}
+.fast-strip--fast svg{color:var(--acc)}
+.fast-strip--free{opacity:.7}
+.fast-strip--free svg{color:var(--mut)}
 .ri{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-bottom:1px solid var(--bor)}
 .ri:last-child{border-bottom:none}
 .prb{display:inline-block;background:var(--acc-bg);border:1px solid var(--acc-bor);border-radius:6px;padding:3px 9px;font-size:11px;color:var(--acc);font-family:var(--body);font-weight:600;margin-top:5px;letter-spacing:-0.005em}
@@ -131,6 +145,7 @@ button:active{opacity:.92}
 <div class="hero"><div class="hbg"></div><div class="hst"></div><div class="hin">
 <div class="hero-eyebrow" id="tlbl">Today</div>
 <div class="hero-title" id="tname">Loading...</div>
+<button class="fast-strip" id="home-fast" onclick="goTo('fast')"></button>
 <div class="q-actions">
 <button class="q-btn q-btn--primary" onclick="startWorkout('gym')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5v11M17.5 6.5v11M3 9.5v5M21 9.5v5M6.5 12h11"/></svg>
@@ -248,6 +263,14 @@ button:active{opacity:.92}
 <div class="sl">Today's Food Log</div><div id="flog"></div>
 <div class="sl" id="myfoods-hdr" style="display:none">My Saved Foods</div>
 <div id="myfoods-list"></div></div>
+<div id="np-macros" style="display:none"><div class="hero" style="margin-bottom:14px"><div class="hbg"></div>
+<div style="position:absolute;top:0;right:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--acc),var(--acc2));pointer-events:none"></div>
+<div class="hin"><div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:var(--acc);text-transform:uppercase;margin-bottom:3px">Daily Target</div>
+<div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:30px" class="grad-text" id="mctl">Loading...</div>
+<div style="font-size:12px;color:var(--mut);margin-top:3px" id="mcsub">Enter bodyweight for personalized targets</div></div></div>
+<div class="card cp" id="mprog"></div></div>
+<div id="np-tips" style="display:none"><div class="card" style="padding:4px 16px"><div class='ri'><div style='font-size:13px;color:rgba(255,255,255,0.6);line-height:1.55'>Hit your protein target every day - it preserves muscle in a deficit.</div></div><div class='ri'><div style='font-size:13px;color:rgba(255,255,255,0.6);line-height:1.55'>Eat protein and fiber first at every meal - keeps you full longer.</div></div><div class='ri'><div style='font-size:13px;color:rgba(255,255,255,0.6);line-height:1.55'>Stop eating 3 hours before bed - better sleep, easier fat loss.</div></div><div class='ri'><div style='font-size:13px;color:rgba(255,255,255,0.6);line-height:1.55'>Liquid calories add up fast - sodas and sweet teas are silent killers.</div></div><div class='ri'><div style='font-size:13px;color:rgba(255,255,255,0.6);line-height:1.55'>One cheat meal will not undo a week of work - one cheat week will.</div></div><div class='ri' style='border:none'><div style='font-size:13px;color:rgba(255,255,255,0.6);line-height:1.55'>Sleep 7-8 hrs - poor sleep increases hunger hormones and cravings.</div></div></div></div>
+</div>
 <div class="page" id="p-fast">
 <div class="sl">Fasting Plan</div>
 <div class="hero" id="fast-today-card"><div class="hbg"></div><div class="hst"></div><div class="hin" id="fast-today"></div></div>
@@ -259,14 +282,6 @@ button:active{opacity:.92}
 <div class="card" id="fast-schedule" style="padding:4px 0"></div>
 <div class="sl" id="fast-hist-hdr" style="display:none">Recent Fasts</div>
 <div id="fast-history"></div>
-</div>
-<div id="np-macros" style="display:none"><div class="hero" style="margin-bottom:14px"><div class="hbg"></div>
-<div style="position:absolute;top:0;right:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--acc),var(--acc2));pointer-events:none"></div>
-<div class="hin"><div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:var(--acc);text-transform:uppercase;margin-bottom:3px">Daily Target</div>
-<div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:30px" class="grad-text" id="mctl">Loading...</div>
-<div style="font-size:12px;color:var(--mut);margin-top:3px" id="mcsub">Enter bodyweight for personalized targets</div></div></div>
-<div class="card cp" id="mprog"></div></div>
-<div id="np-tips" style="display:none"><div class="card" style="padding:4px 16px"><div class='ri'><div style='font-size:13px;color:rgba(255,255,255,0.6);line-height:1.55'>Hit your protein target every day - it preserves muscle in a deficit.</div></div><div class='ri'><div style='font-size:13px;color:rgba(255,255,255,0.6);line-height:1.55'>Eat protein and fiber first at every meal - keeps you full longer.</div></div><div class='ri'><div style='font-size:13px;color:rgba(255,255,255,0.6);line-height:1.55'>Stop eating 3 hours before bed - better sleep, easier fat loss.</div></div><div class='ri'><div style='font-size:13px;color:rgba(255,255,255,0.6);line-height:1.55'>Liquid calories add up fast - sodas and sweet teas are silent killers.</div></div><div class='ri'><div style='font-size:13px;color:rgba(255,255,255,0.6);line-height:1.55'>One cheat meal will not undo a week of work - one cheat week will.</div></div><div class='ri' style='border:none'><div style='font-size:13px;color:rgba(255,255,255,0.6);line-height:1.55'>Sleep 7-8 hrs - poor sleep increases hunger hormones and cravings.</div></div></div></div>
 </div>
 </div>
 <div id="scanner-modal" style="display:none;position:fixed;inset:0;background:#000;z-index:100;flex-direction:column">
@@ -1138,7 +1153,30 @@ function renderHome(){
   gel("tlbl").textContent="Today · "+d.day;gel("tname").textContent=d.name;
   gel("hdr-sub").textContent="Fat Loss & Definition"+(bw?" · "+bw+" lbs":"")+(ST.height?" · "+ST.height:"");
   gel("bwh").style.display=bw?"none":"block";
+  renderHomeFastStrip();
   renderWeightProg();renderPlanSum();renderHomeGlance();renderGoalsList();renderRecent();
+}
+function renderHomeFastStrip(){
+  var el=gel("home-fast");if(!el)return;
+  var hourglassSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12M6 22h12M7 2v2c0 3 3 4 3 8s-3 5-3 8v2M17 2v2c0 3-3 4-3 8s3 5 3 8v2"/></svg>';
+  // Active fast wins
+  if(CURRENT_FAST){
+    var ms=Date.now()-CURRENT_FAST.startedAt;
+    var h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000);
+    el.className="fast-strip fast-strip--active";
+    el.innerHTML=hourglassSvg
+      +"<div class='fast-strip__main'><div class='fast-strip__label'>Fasting now</div><div class='fast-strip__sub'>"+FAST_TYPE_INFO[CURRENT_FAST.type].label+" &middot; tap for milestones</div></div>"
+      +"<div class='fast-strip__time'>"+h+"<span style='font-size:14px;opacity:.6'>h</span> "+m+"<span style='font-size:14px;opacity:.6'>m</span></div>";
+    return;
+  }
+  var today=getTodayFastType();
+  var info=FAST_TYPE_INFO[today];
+  var isMonthly=!!getMonthly48hForDate(new Date());
+  var cls=isMonthly?"fast-strip fast-strip--monthly":(today==="free"?"fast-strip fast-strip--free":"fast-strip fast-strip--fast");
+  var monthlyTag=isMonthly?"<span style='background:rgba(168,85,247,0.18);color:var(--acc2);padding:2px 7px;border-radius:5px;font-size:9px;font-weight:600;letter-spacing:0.3px;text-transform:uppercase'>Monthly</span>":"";
+  el.className=cls;
+  el.innerHTML=hourglassSvg
+    +"<div class='fast-strip__main'><div class='fast-strip__label'>"+info.label+monthlyTag+"</div><div class='fast-strip__sub'>"+info.break+"</div></div>";
 }
 
 var PFX='kev9_';
@@ -1393,7 +1431,7 @@ function renderFast(){
   renderFastMilestones();renderFastSchedule();renderFastHistory();
   // Live timer refresh
   if(CURRENT_FAST&&!FAST_TIMER_INTERVAL){
-    FAST_TIMER_INTERVAL=setInterval(function(){if(CV==="fast"&&CURRENT_FAST)renderFast();},30000);
+    FAST_TIMER_INTERVAL=setInterval(function(){if(CURRENT_FAST){if(CV==="fast")renderFast();else if(CV==="home")renderHomeFastStrip();}},30000);
   }else if(!CURRENT_FAST&&FAST_TIMER_INTERVAL){
     clearInterval(FAST_TIMER_INTERVAL);FAST_TIMER_INTERVAL=null;
   }
