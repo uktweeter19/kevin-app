@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kevin">
+<meta name="theme-color" content="#0a0612">
+<title>Kevin - Fitness Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@zxing/browser@0.1.5/umd/zxing-browser.min.js"></script>
+<style>
+:root{--acc:#FACC15;--acc2:#A855F7;--bg:#0a0612;--card:#15101e;--c2:#1d1729;--bor:rgba(255,255,255,0.07);--mut:rgba(255,255,255,0.36);--fg:#edf0f7;--acc-bg:rgba(250,204,21,0.10);--acc-bor:rgba(250,204,21,0.28)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--fg);font-family:'Barlow',sans-serif;overscroll-behavior:none;-webkit-text-size-adjust:100%;padding-bottom:92px;overflow-x:hidden}
+.app{max-width:430px;margin:0 auto;min-height:100vh}
+.hdr{padding:max(52px,calc(14px + env(safe-area-inset-top))) 20px 14px;background:var(--bg);position:sticky;top:0;z-index:40;border-bottom:1px solid var(--bor)}
+.grad-text{background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.con{padding:14px 20px 104px}
+.page{display:none}.page.active{display:block}
+.sl{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--mut);margin:20px 0 10px}
+.card{background:var(--card);border:1px solid var(--bor);border-radius:16px;margin-bottom:10px}
+.cp{padding:16px}
+input,select,textarea{background:var(--c2);border:1px solid var(--bor);color:var(--fg);border-radius:10px;padding:11px 14px;font-size:15px;font-family:'Barlow',sans-serif;outline:none;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--acc)}
+select option{background:var(--c2)}
+textarea{resize:none}
+.btn{background:var(--acc);color:#0a0612;border:none;border-radius:12px;padding:15px 0;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:17px;letter-spacing:2px;width:100%;cursor:pointer;display:block}
+.btn2{background:var(--card);color:var(--fg);border:1px solid var(--bor);border-radius:12px;padding:13px 0;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;width:100%;cursor:pointer;display:block}
+.btn-teal{background:#0891b2}.btn-green{background:#16a34a}.btn-orange{background:#f97316}
+.btn-sm{width:auto;padding:12px 20px;font-size:15px}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(0,0,0,0.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--bor);display:flex;overflow-x:auto;overflow-y:hidden;padding:10px 4px calc(20px + env(safe-area-inset-bottom));z-index:50;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.nav::-webkit-scrollbar{display:none}
+.nb{flex:0 0 auto;min-width:60px;display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer;padding:4px 5px;color:var(--mut);font-size:10px;letter-spacing:1px;font-family:'Barlow Condensed',sans-serif;font-weight:700;white-space:nowrap}
+.nb.on{color:var(--acc)}.nbi{font-size:22px;line-height:1.1}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.stat-box{background:var(--card);border:1px solid var(--bor);border-radius:14px;padding:14px}
+.stat-num{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:30px;line-height:1;color:var(--acc)}
+.stat-lbl{font-size:11px;color:var(--mut);letter-spacing:1.5px;text-transform:uppercase;margin-top:4px}
+.tab-row{display:flex;gap:8px;margin-bottom:14px}
+.tab-btn{flex:1;padding:10px 0;border-radius:10px;border:1px solid var(--bor);background:var(--card);font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;color:var(--mut);cursor:pointer}
+.tab-btn.on{border-color:var(--acc);background:var(--acc-bg);color:var(--acc)}
+.tab-btn.t.on{border-color:#0891b2;background:rgba(8,145,178,0.09);color:#0891b2}
+.tab-btn.fam.on{border-color:#f97316;background:rgba(249,115,22,0.09);color:#f97316}
+.hero{background:var(--card);border:1px solid var(--bor);border-radius:16px;padding:18px;position:relative;overflow:hidden;margin-bottom:12px}
+.hbg{position:absolute;inset:0;background:linear-gradient(135deg,var(--acc),var(--acc2));opacity:.09;pointer-events:none}
+.hst{position:absolute;top:0;left:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--acc),var(--acc2));pointer-events:none}
+.hin{position:relative}
+.ri{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--bor)}
+.ri:last-child{border-bottom:none}
+.prb{display:inline-block;background:var(--acc-bg);border:1px solid var(--acc-bor);border-radius:6px;padding:3px 8px;font-size:12px;color:var(--acc);font-family:'Barlow Condensed',sans-serif;font-weight:700;margin-top:4px}
+.tipt{font-size:12px;color:rgba(255,255,255,0.42);margin-top:5px;line-height:1.4}
+.set-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.set-badge{background:var(--acc);color:#0a0612;border-radius:7px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:14px;flex-shrink:0}
+.wring{width:140px;height:140px;border-radius:50%;background:var(--card);border:3px solid var(--bor);overflow:hidden;position:relative;margin:0 auto 14px}
+.wfill-wrap{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,var(--acc),var(--acc2));opacity:.55;transition:height .4s}
+.win{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.wnum{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:44px;line-height:1;color:var(--acc)}
+.toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--acc);color:#0a0612;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;letter-spacing:2px;padding:13px 24px;border-radius:14px;z-index:200;pointer-events:none;white-space:nowrap;display:none}
+.day-chips{display:flex;gap:5px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
+.day-chip{flex-shrink:0;min-width:46px;padding:8px 6px;border-radius:10px;border:1px solid var(--bor);background:var(--card);cursor:pointer;text-align:center;position:relative}
+.day-chip.on{border-color:var(--acc);background:var(--acc-bg)}
+.dcl{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;color:var(--mut)}
+.day-chip.on .dcl{color:var(--acc)}
+.ddot{position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;background:var(--acc)}
+.fr{display:flex;justify-content:space-between;align-items:center;width:100%;padding:11px 14px;background:none;border:none;border-bottom:1px solid var(--bor);cursor:pointer;color:var(--fg);text-align:left}
+.fr:last-child{border-bottom:none}
+.fch{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;letter-spacing:2px;color:var(--acc);padding:8px 14px 4px;background:var(--acc-bg);border-bottom:1px solid var(--bor)}
+.wbtns{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:8px}
+::-webkit-scrollbar{display:none}
+button:active{opacity:.82;transform:scale(.98)}
+</style></head><body><div class="app">
+<div class="hdr"><div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:14px">
+<div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:3px;color:var(--acc);text-transform:uppercase;margin-bottom:3px">FITNESS TRACKER</div>
+<div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:38px;line-height:1" class="grad-text">KEVIN</div>
+<div style="font-size:12px;color:var(--mut);margin-top:3px" id="hdr-sub">Fat Loss &amp; Definition</div></div>
+</div></div>
+<div class="toast" id="toast"></div><div class="con">
+<div class="page active" id="p-home">
+<div class="hero"><div class="hbg"></div><div class="hst"></div><div class="hin">
+<div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:var(--acc);text-transform:uppercase;margin-bottom:2px" id="tlbl">TODAY</div>
+<div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;margin-bottom:8px" id="tname">Loading...</div>
+<div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;color:var(--mut);letter-spacing:2px;margin-bottom:6px">INDIVIDUAL</div>
+<div class="wbtns" style="margin-bottom:10px">
+<button class="btn btn-sm" onclick="startWorkout('gym')">&#127947; GYM</button>
+<button class="btn btn-teal btn-sm" onclick="startWorkout('home')">&#127968; HOME</button>
+</div>
+<div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;color:#f97316;letter-spacing:2px;margin-bottom:6px">FAMILY</div>
+<button class="btn btn-orange btn-sm" style="width:100%" onclick="startWorkout('family')">&#128106; FAMILY WORKOUT</button>
+</div></div>
+<div id="hglance"></div>
+<div class="sl">Body Stats</div><div class="card cp">
+<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">
+<div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;color:var(--mut);width:80px;flex-shrink:0">HEIGHT</div>
+<input id="inh" type="text" placeholder="e.g. 5ft 6in" oninput="saveStats()" onblur="saveStats()" onchange="saveStats()"></div>
+<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">
+<div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;color:var(--mut);width:80px;flex-shrink:0">WEIGHT</div>
+<input id="inw" type="text" placeholder="e.g. 165 lbs" oninput="saveStats()" onblur="saveStats()" onchange="saveStats()"></div>
+<div style="display:flex;gap:10px;align-items:center">
+<div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;color:var(--mut);width:80px;flex-shrink:0">TARGET WT</div>
+<input id="int" type="text" placeholder="e.g. 175 lbs" oninput="saveStats()" onblur="saveStats()" onchange="saveStats()"></div>
+<div id="wtprog" style="margin-top:12px"></div>
+<div id="bwh" style="font-size:12px;color:var(--acc);margin-top:10px;line-height:1.5;display:none">Enter your weight to unlock personalized macros, workout weights, and fat-loss goals.</div>
+</div>
+<div class="sl">Fat-Loss Goals</div><div class="card" style="padding:4px 16px" id="goals"></div>
+<div class="sl" id="rech" style="display:none">Recent Workouts</div><div id="reclist"></div>
+</div>
+<div class="page" id="p-program"><div class="sl">Weekly Program</div>
+<div class="tab-row">
+<button class="tab-btn on" id="pt-gym" onclick="setProgType('gym')">&#127947; GYM</button>
+<button class="tab-btn t" id="pt-home" onclick="setProgType('home')">&#127968; HOME</button>
+<button class="tab-btn fam" id="pt-family" onclick="setProgType('family')">&#128106; FAMILY</button>
+</div>
+<div class="day-chips" id="dchips"></div><div id="pcontent"></div></div>
+<div class="page" id="p-log"><div class="sl">Log Workout</div><div class="card cp">
+<div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:var(--mut);margin-bottom:6px">EXERCISE / ACTIVITY</div>
+<input type="text" id="lex" placeholder="e.g. Back Squat, Drills, Push-ups..." style="margin-bottom:14px">
+<div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:var(--mut);margin-bottom:8px">SETS (lbs optional)</div>
+<div id="sc"></div>
+<button class="btn2" style="margin-bottom:14px" onclick="addSet()">+ ADD SET</button>
+<div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:var(--mut);margin-bottom:6px">NOTES</div>
+<textarea id="lnote" rows="3" placeholder="How did it feel? PR?" style="margin-bottom:14px"></textarea>
+<button class="btn" style="margin-bottom:10px" onclick="saveLog()">SAVE WORKOUT</button>
+<button class="btn2" onclick="goTo('home')">CANCEL</button></div></div>
+<div class="page" id="p-records"><div class="sl">Personal Records</div>
+<div style="background:var(--acc-bg);border:1px solid var(--acc-bor);border-radius:12px;padding:11px 14px;margin-bottom:14px;font-size:13px;color:rgba(255,255,255,0.6);line-height:1.5">PRs auto-update workout weight targets and fat-loss goals.</div>
+<div class="tab-row"><button class="tab-btn on" id="prtl" onclick="setPRTab('lifts')">&#127947; LIFTS</button>
+<button class="tab-btn" id="prts" onclick="setPRTab('speed')">&#128202; BODY</button></div>
+<div class="card cp" id="bfc-card" style="margin-bottom:14px;display:none">
+<div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:var(--mut);margin-bottom:10px">&#128207; BODY FAT CALCULATOR (YMCA METHOD)</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+<input type="number" id="bfc-wt" placeholder="Weight (lbs)" step="0.1">
+<input type="number" id="bfc-waist" placeholder="Waist (in)" step="0.1">
+</div>
+<div style="font-size:11px;color:var(--mut);margin-bottom:12px;line-height:1.4">Measure waist at the navel - exhale normally - do not suck in.</div>
+<button class="btn" onclick="calcBF()">CALCULATE BODY FAT %</button>
+<div id="bfc-result" style="margin-top:14px;display:none"></div>
+</div>
+<div class="card cp" style="margin-bottom:14px">
+<div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:var(--mut);margin-bottom:8px" id="prfl">LOG A LIFT PR</div>
+<select id="prk" style="margin-bottom:10px"></select>
+<input type="text" id="prv" placeholder="e.g. 185 lbs, 18%, 32 in, 45:30" style="margin-bottom:10px">
+<input type="date" id="prd" style="margin-bottom:14px">
+<button class="btn" onclick="savePR()">SAVE PR</button></div>
+<div class="card" id="prlist" style="padding:4px 0"></div></div>
+<div class="page" id="p-history"><div class="sl">Workout History (30 Days)</div>
+<div id="hist-list"></div></div>
+<div class="page" id="p-water"><div class="sl">Hydration Tracker</div>
+<div style="text-align:center;padding:20px 0 22px"><div class="wring">
+<div class="wfill-wrap" id="wfill" style="height:0%"></div>
+<div class="win"><div class="wnum" id="wnum">0</div>
+<div style="font-size:11px;color:var(--mut);letter-spacing:2px">/ 14 CUPS</div></div></div>
+<div style="font-size:13px;color:var(--mut)" id="wmsg"></div></div>
+<div style="display:flex;gap:10px;margin-bottom:10px"><button class="btn" onclick="addWater(1)">+ 1 CUP</button>
+<button class="btn2" onclick="addWater(2)">+ 2 CUPS</button></div>
+<button class="btn2" onclick="addWater(-1)">- REMOVE 1</button>
+<div class="sl">Why It Matters</div><div class="card" style="padding:4px 16px"><div class='ri'><div style='font-size:13px;color:rgba(255,255,255,0.56);line-height:1.5'>Water helps suppress appetite - drink a glass before each meal.</div></div><div class='ri'><div style='font-size:13px;color:rgba(255,255,255,0.56);line-height:1.5'>Dehydration is often mistaken for hunger. Drink first, then decide.</div></div><div class='ri'><div style='font-size:13px;color:rgba(255,255,255,0.56);line-height:1.5'>Water boosts metabolism and helps the body burn stored fat.</div></div><div class='ri'><div style='font-size:13px;color:rgba(255,255,255,0.56);line-height:1.5'>Aim for cold water - your body burns calories warming it up.</div></div><div class='ri' style='border:none'><div style='font-size:13px;color:rgba(255,255,255,0.56);line-height:1.5'>Drink a glass before bed - you dehydrate while sleeping.</div></div></div></div>
+<div class="page" id="p-fuel"><div class="sl">Nutrition and Meals</div>
+<div class="tab-row"><button class="tab-btn on" id="nt-meals" onclick="setNutTab('meals')">TODAY'S FOOD</button>
+<button class="tab-btn" id="nt-macros" onclick="setNutTab('macros')">MACROS</button>
+<button class="tab-btn" id="nt-tips" onclick="setNutTab('tips')">TIPS</button></div>
+<div id="np-meals"><div class="card cp" style="margin-bottom:14px" id="msum"></div>
+<div class="tab-row"><button class="tab-btn on" id="fts" onclick="setFoodTab('search')">SEARCH</button>
+<button class="tab-btn" id="ftc" onclick="setFoodTab('custom')">CUSTOM</button></div>
+<div id="fp-search" class="card cp" style="margin-bottom:14px">
+<button class="btn2" style="margin-bottom:12px;background:var(--acc-bg);border-color:var(--acc-bor);color:var(--acc);font-size:14px;letter-spacing:2px" onclick="openScanner()">&#128247; SCAN BARCODE</button>
+<select id="mtime" style="margin-bottom:10px"><option>Breakfast</option><option>Morning Snack</option><option>Lunch</option><option>Pre-Workout</option><option>Post-Workout</option><option>Dinner</option><option>Evening Snack</option></select>
+<input type="text" id="fsearch" placeholder="Search 128+ foods - steak, eggs, pasta..." style="margin-bottom:8px" oninput="renderFoodSearch()">
+<div id="fresults" style="background:var(--c2);border-radius:10px;overflow:hidden;border:1px solid var(--bor);display:none;max-height:340px;overflow-y:auto"></div></div>
+<div id="fp-custom" class="card cp" style="margin-bottom:14px;display:none">
+<select id="mtime2" style="margin-bottom:10px"><option>Breakfast</option><option>Morning Snack</option><option>Lunch</option><option>Pre-Workout</option><option>Post-Workout</option><option>Dinner</option><option>Evening Snack</option></select>
+<input type="text" id="cname" placeholder="Food name" style="margin-bottom:8px">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+<input type="number" id="ccal" placeholder="Calories"><input type="number" id="cpro" placeholder="Protein g">
+<input type="number" id="ccarb" placeholder="Carbs g"><input type="number" id="cfat" placeholder="Fat g"></div>
+<div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:10px;letter-spacing:2px;color:var(--mut);margin-bottom:6px">OPTIONAL (auto-filled from scan)</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">
+<input type="number" id="cfib" placeholder="Fiber g">
+<input type="number" id="csug" placeholder="Sugar g">
+<input type="number" id="csod" placeholder="Sodium mg"></div>
+<button class="btn" onclick="addCustomFood()">ADD &amp; SAVE TO MY FOODS</button></div>
+<div class="sl">Today's Food Log</div><div id="flog"></div>
+<div class="sl" id="myfoods-hdr" style="display:none">My Saved Foods</div>
+<div id="myfoods-list"></div></div>
+<div id="np-macros" style="display:none"><div class="hero" style="margin-bottom:14px"><div class="hbg"></div>
+<div style="position:absolute;top:0;right:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--acc),var(--acc2));pointer-events:none"></div>
+<div class="hin"><div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:var(--acc);text-transform:uppercase;margin-bottom:3px">Daily Target</div>
+<div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:30px" class="grad-text" id="mctl">Loading...</div>
+<div style="font-size:12px;color:var(--mut);margin-top:3px" id="mcsub">Enter bodyweight for personalized targets</div></div></div>
+<div class="card cp" id="mprog"></div></div>
+<div id="np-tips" style="display:none"><div class="card" style="padding:4px 16px"><div class='ri'><div style='font-size:13px;color:rgba(255,255,255,0.6);line-height:1.55'>Hit your protein target every day - it preserves muscle in a deficit.</div></div><div class='ri'><div style='font-size:13px;color:rgba(255,255,255,0.6);line-height:1.55'>Eat protein and fiber first at every meal - keeps you full longer.</div></div><div class='ri'><div style='font-size:13px;color:rgba(255,255,255,0.6);line-height:1.55'>Stop eating 3 hours before bed - better sleep, easier fat loss.</div></div><div class='ri'><div style='font-size:13px;color:rgba(255,255,255,0.6);line-height:1.55'>Liquid calories add up fast - sodas and sweet teas are silent killers.</div></div><div class='ri'><div style='font-size:13px;color:rgba(255,255,255,0.6);line-height:1.55'>One cheat meal will not undo a week of work - one cheat week will.</div></div><div class='ri' style='border:none'><div style='font-size:13px;color:rgba(255,255,255,0.6);line-height:1.55'>Sleep 7-8 hrs - poor sleep increases hunger hormones and cravings.</div></div></div></div>
+</div>
+</div>
+<div id="scanner-modal" style="display:none;position:fixed;inset:0;background:#000;z-index:100;flex-direction:column">
+<div style="padding:max(40px,env(safe-area-inset-top)) 16px 12px;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.85)">
+<div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:18px;color:var(--acc);letter-spacing:2px">SCAN BARCODE</div>
+<button onclick="closeScanner()" style="background:var(--card);border:1px solid var(--bor);color:#fff;font-size:22px;cursor:pointer;padding:4px 14px;border-radius:8px;line-height:1">&times;</button>
+</div>
+<div style="flex:1;position:relative;display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden">
+<video id="scanner-video" style="width:100%;height:100%;object-fit:cover" playsinline muted></video>
+<div style="position:absolute;inset:22% 8%;border:2px solid var(--acc);border-radius:14px;pointer-events:none;box-shadow:0 0 0 9999px rgba(0,0,0,0.5)"></div>
+</div>
+<div id="scanner-status" style="padding:14px 16px max(20px,env(safe-area-inset-bottom));background:rgba(0,0,0,0.85);text-align:center;color:#fff;font-size:13px;line-height:1.4">Point camera at the UPC barcode on the package</div>
+</div>
+<nav class="nav">
+<button class="nb on" id="n-home" onclick="goTo('home')"><span class="nbi">&#127968;</span>HOME</button>
+<button class="nb" id="n-program" onclick="goTo('program')"><span class="nbi">&#128197;</span>PROGRAM</button>
+<button class="nb" id="n-log" onclick="goTo('log')"><span class="nbi">&#10133;</span>LOG</button>
+<button class="nb" id="n-records" onclick="goTo('records')"><span class="nbi">&#127942;</span>RECORDS</button>
+<button class="nb" id="n-history" onclick="goTo('history')"><span class="nbi">&#128214;</span>HISTORY</button>
+<button class="nb" id="n-water" onclick="goTo('water')"><span class="nbi">&#128167;</span>HYDRATE</button>
+<button class="nb" id="n-fuel" onclick="goTo('fuel')"><span class="nbi">&#129361;</span>FUEL</button>
+</nav></div>
+<script>
+const FOOD_DB=[
+  {cat:"Beef & Steak",name:"Ribeye Steak (8oz)",cal:544,pro:46,carb:0,fat:38},
+  {cat:"Beef & Steak",name:"Sirloin Steak (6oz)",cal:320,pro:48,carb:0,fat:14},
+  {cat:"Beef & Steak",name:"Filet Mignon (6oz)",cal:342,pro:48,carb:0,fat:16},
+  {cat:"Beef & Steak",name:"NY Strip Steak (8oz)",cal:460,pro:52,carb:0,fat:27},
+  {cat:"Beef & Steak",name:"Flank Steak (6oz)",cal:276,pro:44,carb:0,fat:10},
+  {cat:"Beef & Steak",name:"Ground Beef 80/20 (4oz)",cal:287,pro:20,carb:0,fat:23},
+  {cat:"Beef & Steak",name:"Ground Beef 93/7 (4oz)",cal:193,pro:25,carb:0,fat:10},
+  {cat:"Beef & Steak",name:"Burger Patty (4oz)",cal:287,pro:20,carb:0,fat:23},
+  {cat:"Beef & Steak",name:"Beef Meatballs (4 medium)",cal:280,pro:18,carb:8,fat:18},
+  {cat:"Beef & Steak",name:"Beef Tacos (2 tacos)",cal:380,pro:22,carb:34,fat:16},
+  {cat:"Beef & Steak",name:"Cheeseburger",cal:540,pro:28,carb:42,fat:28},
+  {cat:"Beef & Steak",name:"Steak & Potato Dinner",cal:680,pro:52,carb:38,fat:28},
+  {cat:"Pork",name:"Pork Chop (6oz)",cal:318,pro:40,carb:0,fat:17},
+  {cat:"Pork",name:"Pork Tenderloin (6oz)",cal:234,pro:42,carb:0,fat:6},
+  {cat:"Pork",name:"Bacon (3 strips)",cal:129,pro:9,carb:0,fat:10},
+  {cat:"Pork",name:"Canadian Bacon (3 slices)",cal:69,pro:11,carb:1,fat:3},
+  {cat:"Pork",name:"Ham (3oz)",cal:116,pro:14,carb:2,fat:6},
+  {cat:"Pork",name:"Pulled Pork (4oz)",cal:240,pro:22,carb:4,fat:14},
+  {cat:"Pork",name:"Pork Sausage (2 links)",cal:170,pro:8,carb:1,fat:15},
+  {cat:"Pork",name:"Italian Sausage (1 link)",cal:230,pro:13,carb:4,fat:18},
+  {cat:"Pork",name:"Pork Ribs (3oz)",cal:248,pro:17,carb:0,fat:20},
+  {cat:"Pork",name:"Bratwurst (1 link)",cal:283,pro:12,carb:2,fat:25},
+  {cat:"Chicken & Turkey",name:"Chicken Breast (4oz)",cal:185,pro:35,carb:0,fat:4},
+  {cat:"Chicken & Turkey",name:"Chicken Breast (6oz)",cal:278,pro:52,carb:0,fat:6},
+  {cat:"Chicken & Turkey",name:"Chicken Thigh (4oz)",cal:209,pro:26,carb:0,fat:11},
+  {cat:"Chicken & Turkey",name:"Chicken Drumstick (2 pcs)",cal:238,pro:28,carb:0,fat:13},
+  {cat:"Chicken & Turkey",name:"Chicken Wings (3)",cal:210,pro:18,carb:0,fat:15},
+  {cat:"Chicken & Turkey",name:"Rotisserie Chicken (4oz)",cal:222,pro:28,carb:0,fat:12},
+  {cat:"Chicken & Turkey",name:"Grilled Chicken (6oz)",cal:242,pro:46,carb:0,fat:5},
+  {cat:"Chicken & Turkey",name:"Turkey Breast (4oz)",cal:153,pro:34,carb:0,fat:1},
+  {cat:"Chicken & Turkey",name:"Ground Turkey (4oz)",cal:170,pro:22,carb:0,fat:9},
+  {cat:"Chicken & Turkey",name:"Chicken Sandwich",cal:420,pro:30,carb:38,fat:16},
+  {cat:"Chicken & Turkey",name:"Chicken Tacos (2)",cal:320,pro:26,carb:34,fat:8},
+  {cat:"Fish & Seafood",name:"Salmon (6oz)",cal:354,pro:40,carb:0,fat:20},
+  {cat:"Fish & Seafood",name:"Tuna (1 can)",cal:109,pro:25,carb:0,fat:1},
+  {cat:"Fish & Seafood",name:"Tilapia (6oz)",cal:168,pro:34,carb:0,fat:3},
+  {cat:"Fish & Seafood",name:"Shrimp (4oz cooked)",cal:112,pro:24,carb:0,fat:1},
+  {cat:"Fish & Seafood",name:"Cod (6oz)",cal:178,pro:38,carb:0,fat:2},
+  {cat:"Fish & Seafood",name:"Mahi Mahi (6oz)",cal:186,pro:40,carb:0,fat:2},
+  {cat:"Fish & Seafood",name:"Catfish (6oz)",cal:226,pro:32,carb:0,fat:11},
+  {cat:"Eggs & Dairy",name:"Egg (1 large)",cal:78,pro:6,carb:0,fat:5},
+  {cat:"Eggs & Dairy",name:"Eggs (2 large)",cal:156,pro:12,carb:1,fat:10},
+  {cat:"Eggs & Dairy",name:"Eggs (3 large)",cal:234,pro:18,carb:1,fat:15},
+  {cat:"Eggs & Dairy",name:"Scrambled Eggs (2 eggs)",cal:182,pro:14,carb:2,fat:13},
+  {cat:"Eggs & Dairy",name:"Egg Whites (3)",cal:51,pro:11,carb:0,fat:0},
+  {cat:"Eggs & Dairy",name:"Greek Yogurt (1 cup)",cal:150,pro:17,carb:9,fat:4},
+  {cat:"Eggs & Dairy",name:"Greek Yogurt Parfait",cal:280,pro:18,carb:38,fat:5},
+  {cat:"Eggs & Dairy",name:"Milk Whole (1 cup)",cal:149,pro:8,carb:12,fat:8},
+  {cat:"Eggs & Dairy",name:"Chocolate Milk (1 cup)",cal:208,pro:8,carb:26,fat:8},
+  {cat:"Eggs & Dairy",name:"Cottage Cheese (1 cup)",cal:206,pro:28,carb:8,fat:4},
+  {cat:"Eggs & Dairy",name:"Cheddar Cheese (1oz)",cal:113,pro:7,carb:0,fat:9},
+  {cat:"Eggs & Dairy",name:"String Cheese (1 stick)",cal:80,pro:7,carb:0,fat:6},
+  {cat:"Breakfast",name:"Oatmeal (1 cup cooked)",cal:158,pro:6,carb:27,fat:3},
+  {cat:"Breakfast",name:"Oatmeal with Banana & Honey",cal:290,pro:8,carb:58,fat:4},
+  {cat:"Breakfast",name:"Pancakes (2 medium)",cal:290,pro:8,carb:46,fat:8},
+  {cat:"Breakfast",name:"Waffles (2)",cal:310,pro:8,carb:50,fat:9},
+  {cat:"Breakfast",name:"French Toast (2 slices)",cal:310,pro:10,carb:40,fat:12},
+  {cat:"Breakfast",name:"Breakfast Burrito",cal:380,pro:18,carb:38,fat:18},
+  {cat:"Breakfast",name:"Bagel with Cream Cheese",cal:360,pro:12,carb:52,fat:12},
+  {cat:"Breakfast",name:"English Muffin",cal:132,pro:5,carb:26,fat:1},
+  {cat:"Breakfast",name:"Granola (1/2 cup)",cal:209,pro:5,carb:34,fat:7},
+  {cat:"Breakfast",name:"Granola Bar",cal:190,pro:4,carb:28,fat:7},
+  {cat:"Breakfast",name:"Cereal with Milk",cal:210,pro:7,carb:38,fat:4},
+  {cat:"Breakfast",name:"Smoothie (fruit + protein)",cal:280,pro:20,carb:38,fat:4},
+  {cat:"Breakfast",name:"Avocado Toast (2 slices)",cal:340,pro:8,carb:32,fat:20},
+  {cat:"Breakfast",name:"Breakfast Sandwich",cal:450,pro:22,carb:38,fat:22},
+  {cat:"Grains & Carbs",name:"White Rice (1 cup)",cal:206,pro:4,carb:45,fat:0},
+  {cat:"Grains & Carbs",name:"Brown Rice (1 cup)",cal:216,pro:5,carb:45,fat:2},
+  {cat:"Grains & Carbs",name:"Pasta (1 cup cooked)",cal:220,pro:8,carb:43,fat:1},
+  {cat:"Grains & Carbs",name:"Whole Wheat Pasta (1 cup)",cal:210,pro:9,carb:40,fat:2},
+  {cat:"Grains & Carbs",name:"Quinoa (1 cup)",cal:222,pro:8,carb:39,fat:4},
+  {cat:"Grains & Carbs",name:"Sweet Potato (medium)",cal:103,pro:2,carb:24,fat:0},
+  {cat:"Grains & Carbs",name:"Baked Potato (medium)",cal:161,pro:4,carb:37,fat:0},
+  {cat:"Grains & Carbs",name:"Mashed Potatoes (1 cup)",cal:237,pro:4,carb:35,fat:9},
+  {cat:"Grains & Carbs",name:"Whole Wheat Bread (1 slice)",cal:81,pro:4,carb:14,fat:1},
+  {cat:"Grains & Carbs",name:"White Bread (1 slice)",cal:79,pro:3,carb:15,fat:1},
+  {cat:"Grains & Carbs",name:"Bagel (1 medium)",cal:245,pro:10,carb:48,fat:2},
+  {cat:"Grains & Carbs",name:"Rice Cakes (2)",cal:70,pro:1,carb:15,fat:0},
+  {cat:"Grains & Carbs",name:"Flour Tortilla (large)",cal:218,pro:6,carb:36,fat:5},
+  {cat:"Grains & Carbs",name:"Spaghetti & Meat Sauce",cal:490,pro:26,carb:65,fat:13},
+  {cat:"Vegetables",name:"Broccoli (1 cup)",cal:55,pro:4,carb:11,fat:0},
+  {cat:"Vegetables",name:"Spinach (2 cups raw)",cal:14,pro:2,carb:2,fat:0},
+  {cat:"Vegetables",name:"Green Beans (1 cup)",cal:44,pro:2,carb:10,fat:0},
+  {cat:"Vegetables",name:"Asparagus (1 cup)",cal:40,pro:4,carb:7,fat:0},
+  {cat:"Vegetables",name:"Corn (1 cup)",cal:132,pro:5,carb:29,fat:2},
+  {cat:"Vegetables",name:"Mixed Vegetables (1 cup)",cal:80,pro:4,carb:15,fat:0},
+  {cat:"Vegetables",name:"Side Salad (no dressing)",cal:25,pro:2,carb:5,fat:0},
+  {cat:"Vegetables",name:"Caesar Salad (side)",cal:190,pro:5,carb:12,fat:14},
+  {cat:"Fruits",name:"Banana (medium)",cal:105,pro:1,carb:27,fat:0},
+  {cat:"Fruits",name:"Apple (medium)",cal:95,pro:0,carb:25,fat:0},
+  {cat:"Fruits",name:"Orange (medium)",cal:62,pro:1,carb:15,fat:0},
+  {cat:"Fruits",name:"Blueberries (1 cup)",cal:84,pro:1,carb:21,fat:0},
+  {cat:"Fruits",name:"Strawberries (1 cup)",cal:49,pro:1,carb:12,fat:0},
+  {cat:"Fruits",name:"Grapes (1 cup)",cal:104,pro:1,carb:27,fat:0},
+  {cat:"Fruits",name:"Watermelon (2 cups)",cal:85,pro:2,carb:21,fat:0},
+  {cat:"Sides & Snacks",name:"Mac & Cheese (1 cup)",cal:350,pro:12,carb:48,fat:13},
+  {cat:"Sides & Snacks",name:"French Fries (medium)",cal:365,pro:4,carb:48,fat:17},
+  {cat:"Sides & Snacks",name:"Baked Beans (1/2 cup)",cal:130,pro:6,carb:26,fat:1},
+  {cat:"Sides & Snacks",name:"Coleslaw (1/2 cup)",cal:140,pro:1,carb:14,fat:9},
+  {cat:"Sides & Snacks",name:"Corn on the Cob",cal:123,pro:5,carb:27,fat:2},
+  {cat:"Sides & Snacks",name:"Dinner Roll",cal:87,pro:3,carb:15,fat:2},
+  {cat:"Sides & Snacks",name:"Black Beans (1/2 cup)",cal:114,pro:8,carb:20,fat:0},
+  {cat:"Sides & Snacks",name:"Avocado (half)",cal:120,pro:1,carb:6,fat:11},
+  {cat:"Sides & Snacks",name:"Pretzels (1 oz)",cal:108,pro:3,carb:23,fat:1},
+  {cat:"Sides & Snacks",name:"Chips (1 oz)",cal:152,pro:2,carb:15,fat:10},
+  {cat:"Sides & Snacks",name:"Almonds (1 oz)",cal:164,pro:6,carb:6,fat:14},
+  {cat:"Sides & Snacks",name:"Mixed Nuts (1 oz)",cal:173,pro:5,carb:6,fat:16},
+  {cat:"Sides & Snacks",name:"Trail Mix (1 oz)",cal:130,pro:3,carb:13,fat:8},
+  {cat:"Sides & Snacks",name:"Peanut Butter (2 tbsp)",cal:190,pro:8,carb:6,fat:16},
+  {cat:"Sides & Snacks",name:"Hummus (2 tbsp)",cal:50,pro:2,carb:5,fat:3},
+  {cat:"Full Meals",name:"Chicken Rice Bowl",cal:520,pro:44,carb:55,fat:10},
+  {cat:"Full Meals",name:"Grilled Chicken Salad",cal:280,pro:34,carb:12,fat:9},
+  {cat:"Full Meals",name:"Turkey Wrap",cal:320,pro:28,carb:30,fat:8},
+  {cat:"Full Meals",name:"PB&J Sandwich",cal:375,pro:13,carb:50,fat:14},
+  {cat:"Full Meals",name:"Grilled Cheese Sandwich",cal:390,pro:14,carb:38,fat:21},
+  {cat:"Full Meals",name:"Tuna Sandwich",cal:340,pro:26,carb:32,fat:12},
+  {cat:"Full Meals",name:"Burrito Bowl (chicken)",cal:620,pro:38,carb:72,fat:16},
+  {cat:"Full Meals",name:"Pizza (2 slices cheese)",cal:570,pro:24,carb:70,fat:20},
+  {cat:"Drinks & Shakes",name:"Protein Shake (water)",cal:120,pro:25,carb:3,fat:2},
+  {cat:"Drinks & Shakes",name:"Protein Shake (milk)",cal:270,pro:33,carb:15,fat:10},
+  {cat:"Drinks & Shakes",name:"Chocolate Milk (1 cup)",cal:208,pro:8,carb:26,fat:8},
+  {cat:"Drinks & Shakes",name:"Whole Milk (1 cup)",cal:149,pro:8,carb:12,fat:8},
+  {cat:"Drinks & Shakes",name:"Orange Juice (1 cup)",cal:112,pro:2,carb:26,fat:0},
+  {cat:"Drinks & Shakes",name:"Apple Juice (1 cup)",cal:117,pro:0,carb:29,fat:0},
+  {cat:"Drinks & Shakes",name:"Tart Cherry Juice (8oz)",cal:140,pro:1,carb:33,fat:0},
+  {cat:"Drinks & Shakes",name:"Gatorade (12oz)",cal:80,pro:0,carb:21,fat:0},
+  {cat:"Drinks & Shakes",name:"Gatorade (20oz)",cal:130,pro:0,carb:34,fat:0},
+  {cat:"Drinks & Shakes",name:"Smoothie (fruit+protein)",cal:280,pro:20,carb:38,fat:4}
+];
+
+// Storage
+function saveKey(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function loadKey(k,def){try{var s=localStorage.getItem(k);if(s!=null){var p=JSON.parse(s);if(p!=null)return p;}}catch(e){}return def;}
+
+// Helpers
+function gel(id){return document.getElementById(id);}
+function getBW(){var n=parseFloat((ST.weight||"").replace(/[^0-9.]/g,""));return isNaN(n)?null:n;}
+function getPRN(o,k){if(!o[k])return null;var n=parseFloat((o[k].val||"").replace(/[^0-9.]/g,""));return isNaN(n)?null:n;}
+function r5(n){return Math.max(Math.round(n/5)*5,5);}
+function showToast(m){var t=gel("toast");t.textContent=m;t.style.display="block";setTimeout(function(){t.style.display="none";},1600);}
+function daysAgo(dateStr){try{return Math.floor((Date.now()-new Date(dateStr).getTime())/864e5);}catch(e){return 999;}}
+
+// Exercise weight memory
+function getLastWeight(exName){return EW[exName]||"";}
+function setLastWeight(exName,w){if(w&&w.trim()){EW[exName]=w.trim();saveKey(PFX+"exweights",EW);}}
+
+// Set rows
+function makeSetRow(i,wv,rv){
+  var row=document.createElement("div");row.className="set-row";row.id="sr"+i;
+  var b=document.createElement("div");b.className="set-badge";b.textContent=i+1;
+  var wi=document.createElement("input");wi.type="number";wi.inputMode="decimal";wi.placeholder="lbs (opt)";wi.id="sw"+i;wi.value=wv||"";
+  var ri=document.createElement("input");ri.type="text";ri.placeholder="reps / time / dist";ri.id="sr2"+i;ri.value=rv||"";
+  row.appendChild(b);row.appendChild(wi);row.appendChild(ri);
+  if(i>0){var x=document.createElement("button");x.innerHTML="&times;";x.style.cssText="background:var(--c2);border:1px solid var(--bor);color:var(--mut);border-radius:8px;width:32px;height:32px;font-size:20px;cursor:pointer;flex-shrink:0";x.onclick=(function(n){return function(){var r=gel("sr"+n);if(r)r.remove();};})(i);row.appendChild(x);}
+  return row;
+}
+function resetSets(){SC=1;var c=gel("sc");c.innerHTML="";c.appendChild(makeSetRow(0,"",""));}
+function openLog(n,w,r){
+  var wt=w||getLastWeight(n)||"";
+  gel("lex").value=n||"";gel("lnote").value="";resetSets();
+  if(wt||r){gel("sw0").value=wt;gel("sr20").value=r||"";}
+  goTo("log");
+}
+
+// Navigation
+function goTo(page){
+  document.querySelectorAll(".page").forEach(function(p){p.classList.remove("active");});
+  document.querySelectorAll(".nb").forEach(function(b){b.classList.remove("on");});
+  gel("p-"+page).classList.add("active");
+  gel("n-"+page).classList.add("on");
+  CV=page;
+  if(page==="home")renderHome();
+  else if(page==="program")renderProg();
+  else if(page==="records")renderRecs();
+  else if(page==="water")renderWater();
+  else if(page==="fuel")renderFuel();
+  else if(page==="history")renderHistory();
+  window.scrollTo(0,0);
+}
+
+// Workout logging
+function addSet(){var c=gel("sc");c.appendChild(makeSetRow(SC,"",""));SC++;}
+function saveLog(){
+  var ex=gel("lex").value.trim();if(!ex){showToast("Enter exercise name");return;}
+  var sets=[];
+  for(var i=0;i<SC;i++){
+    var wi=gel("sw"+i),ri=gel("sr2"+i);if(!wi||!ri)continue;
+    var rv=ri.value.trim();if(!rv)continue;
+    var wv=wi.value.trim();
+    sets.push({w:wv,r:rv});
+    if(wv)setLastWeight(ex,wv);
+  }
+  if(!sets.length){showToast("Add at least 1 set");return;}
+  var entry={id:Date.now(),ex:ex,sets:sets,note:gel("lnote").value.trim(),
+    date:new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}),
+    time:new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})};
+  WL.unshift(entry);
+  WL=WL.filter(function(l){return daysAgo(l.date)<=30;});
+  saveKey(PFX+"logs",WL);
+  resetSets();gel("lex").value="";gel("lnote").value="";
+  showToast("LOGGED");goTo("home");
+}
+function logPractice(){
+  WL.unshift({id:Date.now(),ex:"Practice",sets:[{w:"",r:"session"}],note:"",
+    date:new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}),
+    time:new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})});
+  WL=WL.filter(function(l){return daysAgo(l.date)<=30;});
+  saveKey(PFX+"logs",WL);showToast("PRACTICE LOGGED");renderHome();
+}
+
+// History page (30 days)
+function renderHistory(){
+  var hl=gel("hist-list");hl.innerHTML="";
+  if(!WL.length){
+    hl.innerHTML="<div style='text-align:center;padding:40px 20px;color:var(--mut)'><div style='font-size:36px;margin-bottom:8px'>&#128214;</div><div style='font-family:Barlow Condensed,sans-serif;font-size:16px'>No workouts logged yet.</div><div style='font-size:13px;margin-top:6px'>Your last 30 days will appear here.</div></div>";
+    return;
+  }
+  var byDate={};var dateOrder=[];
+  WL.forEach(function(log){
+    if(!byDate[log.date]){byDate[log.date]=[];dateOrder.push(log.date);}
+    byDate[log.date].push(log);
+  });
+  dateOrder.forEach(function(date){
+    var grp=byDate[date];
+    var section=document.createElement("div");section.style.marginBottom="20px";
+    var dhdr=document.createElement("div");
+    dhdr.style.cssText="font-family:Barlow Condensed,sans-serif;font-weight:800;font-size:13px;letter-spacing:2px;color:var(--acc);margin-bottom:8px";
+    var da=daysAgo(date);
+    dhdr.textContent=da===0?"TODAY":da===1?"YESTERDAY":date.toUpperCase();
+    section.appendChild(dhdr);
+    grp.forEach(function(log){
+      var card=document.createElement("div");card.className="card";card.style.padding="14px 16px";
+      var top=document.createElement("div");top.style.cssText="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px";
+      var exName=document.createElement("div");exName.style.cssText="font-family:Barlow Condensed,sans-serif;font-weight:700;font-size:18px";exName.textContent=log.ex;
+      var time=document.createElement("div");time.style.cssText="font-size:11px;color:var(--mut)";time.textContent=log.time||"";
+      top.appendChild(exName);top.appendChild(time);card.appendChild(top);
+      var sets=document.createElement("div");sets.style.cssText="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:4px";
+      sets.textContent=log.sets.map(function(s){return s.w?s.w+"lbs x "+s.r:s.r;}).join("  |  ");
+      card.appendChild(sets);
+      if(log.note){var note=document.createElement("div");note.style.cssText="font-size:12px;color:var(--mut);font-style:italic";note.textContent=log.note;card.appendChild(note);}
+      section.appendChild(card);
+    });
+    hl.appendChild(section);
+  });
+}
+
+// PRs
+function savePR(){
+  var k=gel("prk").value,v=gel("prv").value.trim(),d=gel("prd").value||TODAY;
+  if(!k||!v){showToast("Select and enter value");return;}
+  if(PRTAB==="lifts")LP[k]={val:v,date:d};else RP[k]={val:v,date:d};
+  saveKey(PFX+"liftprs",LP);saveKey(PFX+"runprs",RP);
+  gel("prk").value="";gel("prv").value="";gel("prd").value="";
+  showToast("PR SAVED");renderPRList();if(CV==="home")renderHome();
+}
+function calcBF(){
+  var wt=parseFloat(gel("bfc-wt").value);
+  var waist=parseFloat(gel("bfc-waist").value);
+  if(!wt||!waist||wt<=0||waist<=0){showToast("Enter weight and waist");return;}
+  if(waist<20||waist>80){showToast("Check waist measurement");return;}
+  // YMCA formula for men (Penrose, Nelson, Fisher 1985)
+  var bf=((-98.42+4.15*waist-0.082*wt)/wt)*100;
+  bf=Math.round(bf*10)/10;
+  if(bf<3)bf=3;if(bf>60)bf=60;
+  var cat;if(bf<6)cat="Essential fat";else if(bf<14)cat="Athlete";else if(bf<18)cat="Fitness";else if(bf<25)cat="Average";else cat="Above average";
+  var res=gel("bfc-result");res.style.display="block";
+  res.innerHTML="<div style='background:var(--acc-bg);border:1px solid var(--acc-bor);border-radius:12px;padding:16px'><div style='font-family:Barlow Condensed,sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:var(--mut);margin-bottom:4px'>ESTIMATED BODY FAT</div><div style='display:flex;align-items:baseline;gap:10px'><div style='font-family:Barlow Condensed,sans-serif;font-weight:900;font-size:44px;color:var(--acc);line-height:1'>"+bf.toFixed(1)+"%</div><div style='font-family:Barlow Condensed,sans-serif;font-weight:700;font-size:14px;color:var(--acc2)'>"+cat+"</div></div><div style='font-size:11px;color:var(--mut);margin-top:8px;line-height:1.4'>YMCA method margin of error: <b style='color:rgba(255,255,255,0.7)'>&plusmn;3-4%</b>. Less accurate than DEXA or skinfold calipers, but consistent week-to-week so trend lines are reliable.</div><button class='btn' style='margin-top:14px' onclick='saveBFAsPR("+bf.toFixed(1)+")'>SAVE AS BODY FAT % PR</button></div>";
+}
+function saveBFAsPR(bf){
+  RP["Body Fat %"]={val:bf+"%",date:TODAY};
+  saveKey(PFX+"runprs",RP);
+  showToast("BODY FAT % SAVED");
+  renderPRList();
+  if(CV==="home")renderHome();
+}
+function setPRTab(tab){
+  PRTAB=tab;
+  gel("prtl").classList.toggle("on",tab==="lifts");
+  gel("prts").classList.toggle("on",tab==="speed");
+  gel("prfl").textContent="LOG A "+(tab==="lifts"?"LIFT":"BODY METRIC")+" PR";
+  var names=tab==="lifts"?LNAMES:SNAMES;
+  var sel=gel("prk");sel.innerHTML="";
+  var o=document.createElement("option");o.value="";o.textContent="Select...";sel.appendChild(o);
+  names.forEach(function(n){var op=document.createElement("option");op.value=n;op.textContent=n;sel.appendChild(op);});
+  var bfc=gel("bfc-card");if(bfc)bfc.style.display=(tab==="speed")?"block":"none";
+  if(tab==="speed"){var wt=getBW();var wInp=gel("bfc-wt");if(wInp&&!wInp.value&&wt)wInp.value=wt;}
+  renderPRList();
+}
+function renderRecs(){setPRTab(PRTAB);}
+function renderPRList(){
+  var names=PRTAB==="lifts"?LNAMES:SNAMES;
+  var prs=PRTAB==="lifts"?LP:RP;
+  var list=gel("prlist");list.innerHTML="";
+  for(var i=0;i<names.length;i++){
+    (function(name,i){
+      var pr=prs[name];
+      var row=document.createElement("div");
+      row.style.cssText="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:"+(i<names.length-1?"1px solid var(--bor)":"none");
+      var left=document.createElement("div");
+      var nm=document.createElement("div");nm.style.cssText="font-family:Barlow Condensed,sans-serif;font-weight:700;font-size:16px";nm.textContent=name;left.appendChild(nm);
+      if(pr){var dt=document.createElement("div");dt.style.cssText="font-size:11px;color:var(--mut);margin-top:1px";dt.textContent=pr.date;left.appendChild(dt);}
+      row.appendChild(left);
+      if(pr){
+        var right=document.createElement("div");right.style.textAlign="right";
+        var vl=document.createElement("div");vl.style.cssText="font-family:Barlow Condensed,sans-serif;font-weight:900;font-size:22px;color:var(--acc)";vl.textContent=pr.val;
+        var ub=document.createElement("button");ub.style.cssText="font-size:11px;color:var(--mut);background:none;border:none;cursor:pointer";ub.textContent="UPDATE";
+        ub.onclick=(function(n){return function(){gel("prk").value=n;var p=PRTAB==="lifts"?LP[n]:RP[n];if(p){gel("prv").value=p.val;gel("prd").value=p.date;}};})(name);
+        right.appendChild(vl);right.appendChild(ub);row.appendChild(right);
+      }else{
+        var lb=document.createElement("button");lb.style.cssText="font-family:Barlow Condensed,sans-serif;font-weight:700;font-size:12px;color:var(--acc);background:none;border:1px solid var(--acc-bor);border-radius:7px;padding:5px 10px;cursor:pointer";lb.textContent="+ LOG";
+        lb.onclick=(function(n){return function(){gel("prk").value=n;};})(name);row.appendChild(lb);
+      }
+      list.appendChild(row);
+    })(names[i],i);
+  }
+}
+
+// Water
+function addWater(n){WA[TODAY]=Math.max(0,(WA[TODAY]||0)+n);saveKey(PFX+"water",WA);renderWater();if(CV==="home")renderHome();}
+function renderWater(){
+  var c=WA[TODAY]||0,g=WGOAL,pct=Math.min(100,Math.round(c/g*100));
+  gel("wfill").style.height=pct+"%";gel("wnum").textContent=c;
+  gel("wmsg").textContent=pct>=100?"Goal reached!":(g-c)+" more cup"+((g-c)!==1?"s":"")+" to go";
+}
+
+// Program
+function renderProg(){
+  var isFamily=(CPT==="family");
+  var prog=isFamily?FPROG:(CPT==="home"?HPROG:GPROG);
+  ["gym","home","family"].forEach(function(t){var el=gel("pt-"+t);if(el)el.classList.toggle("on",CPT===t);});
+  var chips=gel("dchips");chips.innerHTML="";
+  for(var i=0;i<prog.length;i++){
+    (function(d,i){
+      var chip=document.createElement("div");
+      chip.className="day-chip"+(CDAY===i?" on":"");
+      chip.onclick=function(){CDAY=(CDAY===i?null:i);renderProg();};
+      var lbl=document.createElement("div");lbl.className="dcl";lbl.textContent=d.day;
+      var cnt=document.createElement("div");cnt.style.cssText="font-size:9px;color:var(--mut);margin-top:1px";cnt.textContent=d.ex.length+"EX";
+      chip.appendChild(lbl);chip.appendChild(cnt);
+      if(i===TI){var dot=document.createElement("div");dot.className="ddot";chip.appendChild(dot);}
+      chips.appendChild(chip);
+    })(prog[i],i);
+  }
+  var pc=gel("pcontent");pc.innerHTML="";
+  if(CDAY===null){
+    for(var i=0;i<prog.length;i++){
+      (function(d,i){
+        var card=document.createElement("div");card.className="card";card.style.marginBottom="10px";
+        var bg=i===TI?"var(--acc)":"var(--c2)";
+        var prev="";for(var j=0;j<Math.min(3,d.ex.length);j++)prev+="- "+d.ex[j].n+" "+d.ex[j].s+"x"+d.ex[j].r+"<br>";
+        if(d.ex.length>3)prev+="+"+(d.ex.length-3)+" more";
+        var tl=i===TI?"<span style='font-family:Barlow Condensed,sans-serif;font-weight:800;font-size:11px;color:var(--acc)'>TODAY</span>":"";
+        card.innerHTML="<div style='padding:13px 16px 10px;display:flex;gap:10px;align-items:center'><div style='background:"+bg+";border-radius:7px;padding:3px 10px;font-family:Barlow Condensed,sans-serif;font-weight:800;font-size:13px;color:#fff'>"+d.day+"</div><div style='flex:1'><div style='font-family:Barlow Condensed,sans-serif;font-weight:700;font-size:17px'>"+d.name+"</div><div style='font-size:11px;color:var(--mut)'>"+d.ex.length+" exercises</div></div>"+tl+"</div><div style='padding:0 16px 13px;font-size:13px;color:var(--mut)'>"+prev+"</div>";
+        pc.appendChild(card);
+      })(prog[i],i);
+    }
+  }else{
+    var d=prog[CDAY];
+    var card=document.createElement("div");card.className="card";
+    var subtitle=isFamily?"Family workout - everyone does the same":(CPT==="gym"?"Weights from your PRs":"Light DBs + outdoor walks");
+    var hdr=document.createElement("div");
+    hdr.innerHTML="<div style='padding:16px 16px 10px'><div style='display:flex;gap:10px;align-items:center;margin-bottom:4px'><div style='background:var(--acc);border-radius:7px;padding:3px 12px;font-family:Barlow Condensed,sans-serif;font-weight:800;font-size:14px;color:#fff'>"+d.day+"</div><div style='font-family:Barlow Condensed,sans-serif;font-weight:800;font-size:20px'>"+d.name+"</div></div><div style='font-size:12px;color:var(--mut)'>"+subtitle+"</div></div>";
+    card.appendChild(hdr);
+    var ew=document.createElement("div");ew.style.padding="0 16px 6px";
+    for(var j=0;j<d.ex.length;j++){
+      (function(ex,j){
+        var isEndurance=(ex.s==="endurance");
+        var sw=(!isFamily&&CPT==="gym")?calcW(ex.n,ex.intensity):null;
+        var displayW=sw||(isEndurance?"":getLastWeight(ex.n));
+        var row=document.createElement("div");
+        row.style.cssText="display:flex;gap:10px;align-items:flex-start;padding:13px 0;border-bottom:"+(j<d.ex.length-1?"1px solid var(--bor)":"none");
+        var num=document.createElement("div");
+        if(isEndurance){num.style.cssText="font-size:18px;flex-shrink:0;width:22px";num.textContent="\u23f1";}
+        else{num.style.cssText="font-family:Barlow Condensed,sans-serif;font-weight:900;font-size:18px;color:var(--acc);width:22px;flex-shrink:0";num.textContent=j+1;}
+        var info=document.createElement("div");info.style.flex="1";
+        var rl=typeof ex.r==="number"?ex.r+" reps":ex.r;
+        var swBadge=displayW?"<div class='prb'>"+(sw?"Target: "+sw+" lbs":"Last: "+displayW)+"</div>":"";
+        info.innerHTML="<div style='font-family:Barlow Condensed,sans-serif;font-weight:700;font-size:16px"+(isEndurance?";color:var(--acc2)":"")+"'>"+ex.n+"</div>"
+          +(isEndurance?"<div style='font-size:12px;color:var(--mut);margin-top:1px'>Endurance finisher</div>"
+          :"<div style='font-size:12px;color:var(--mut);margin-top:1px'>"+ex.s+" sets x "+rl+"</div>")
+          +swBadge
+          +(ex.tip?"<div class='tipt'>"+ex.tip+"</div>":"");
+        var btn=document.createElement("button");btn.style.cssText="background:var(--c2);border:1px solid var(--bor);color:var(--acc);border-radius:8px;padding:6px 12px;font-size:12px;font-family:Barlow Condensed,sans-serif;font-weight:800;cursor:pointer;flex-shrink:0";btn.textContent="LOG";
+        btn.onclick=(function(n,w,r){return function(){openLog(n,w,r);};})(ex.n,displayW,isEndurance?ex.n:ex.r);
+        row.appendChild(num);row.appendChild(info);row.appendChild(btn);ew.appendChild(row);
+      })(d.ex[j],j);
+    }
+    card.appendChild(ew);
+    var ft=document.createElement("div");ft.style.padding="10px 16px 16px";
+    var ab=document.createElement("button");ab.className="btn";ab.textContent="+ LOG A SET";ab.onclick=function(){openLog("","","");};
+    ft.appendChild(ab);card.appendChild(ft);pc.appendChild(card);
+  }
+}
+function setProgType(t){CPT=t;CDAY=null;renderProg();}
+function startWorkout(t){CPT=t;CDAY=TI;goTo("program");}
+
+// Food / Nutrition
+function renderFoodSearch(){
+  var q=gel("fsearch").value.toLowerCase().trim();
+  var res=gel("fresults");
+  if(q.length<2){res.style.display="none";return;}
+  res.style.display="block";res.innerHTML="";
+  // My Foods (saved/scanned) first
+  var myMatches=MY_FOODS.filter(function(f){return f.name.toLowerCase().indexOf(q)>=0;}).slice(0,10);
+  if(myMatches.length){
+    var hdr=document.createElement("div");hdr.className="fch";hdr.textContent="MY FOODS (SAVED)";res.appendChild(hdr);
+    myMatches.forEach(function(f){
+      var btn=document.createElement("button");btn.className="fr";
+      btn.innerHTML="<div><div style='font-family:Barlow Condensed,sans-serif;font-weight:700;font-size:14px'>"+f.name+"</div><div style='font-size:11px;color:var(--mut);margin-top:1px'>"+(f.pro||0)+"g pro - "+(f.carb||0)+"g carbs - "+(f.fat||0)+"g fat"+(f.fiber?" - "+f.fiber+"g fiber":"")+"</div></div><div style='font-family:Barlow Condensed,sans-serif;font-weight:900;font-size:16px;color:var(--acc);flex-shrink:0;margin-left:8px'>"+f.cal+"</div>";
+      btn.onclick=(function(fd){return function(){addFood(fd);};})(f);
+      res.appendChild(btn);
+    });
+  }
+  // Built-in DB
+  var matches=[];
+  for(var i=0;i<FOOD_DB.length&&matches.length<15;i++){var f=FOOD_DB[i];if(f.name.toLowerCase().indexOf(q)>=0||f.cat.toLowerCase().indexOf(q)>=0)matches.push(f);}
+  if(!matches.length&&!myMatches.length){res.style.display="none";return;}
+  var grouped={};var cats=[];
+  matches.forEach(function(f){if(!grouped[f.cat]){grouped[f.cat]=[];cats.push(f.cat);}grouped[f.cat].push(f);});
+  cats.forEach(function(cat){
+    var hdr=document.createElement("div");hdr.className="fch";hdr.textContent=cat.toUpperCase();res.appendChild(hdr);
+    grouped[cat].forEach(function(f){
+      var btn=document.createElement("button");btn.className="fr";
+      btn.innerHTML="<div><div style='font-family:Barlow Condensed,sans-serif;font-weight:700;font-size:14px'>"+f.name+"</div><div style='font-size:11px;color:var(--mut);margin-top:1px'>"+f.pro+"g pro - "+f.carb+"g carbs - "+f.fat+"g fat</div></div><div style='font-family:Barlow Condensed,sans-serif;font-weight:900;font-size:16px;color:var(--acc);flex-shrink:0;margin-left:8px'>"+f.cal+"</div>";
+      btn.onclick=(function(fd){return function(){addFood(fd);};})(f);
+      res.appendChild(btn);
+    });
+  });
+}
+function addFood(f){
+  var mt=gel("mtime").value;if(!ML[TODAY])ML[TODAY]=[];
+  ML[TODAY].push({id:Date.now(),mt:mt,name:f.name,cal:f.cal||0,pro:f.pro||0,carb:f.carb||0,fat:f.fat||0,fiber:f.fiber||0,sugar:f.sugar||0,sodium:f.sodium||0});
+  saveKey(PFX+"meals",ML);gel("fsearch").value="";gel("fresults").style.display="none";
+  showToast("Added!");renderFoodLog();renderMacroSummary();if(CV==="home")renderHome();
+}
+function addCustomFood(){
+  var name=gel("cname").value.trim();var cal=parseInt(gel("ccal").value)||0;
+  if(!name||!cal){showToast("Enter name and calories");return;}
+  var mt=gel("mtime2").value;
+  var f={id:Date.now(),mt:mt,name:name,cal:cal,
+    pro:parseInt(gel("cpro").value)||0,
+    carb:parseInt(gel("ccarb").value)||0,
+    fat:parseInt(gel("cfat").value)||0,
+    fiber:parseFloat(gel("cfib").value)||0,
+    sugar:parseFloat(gel("csug").value)||0,
+    sodium:parseInt(gel("csod").value)||0};
+  if(!ML[TODAY])ML[TODAY]=[];ML[TODAY].push(f);saveKey(PFX+"meals",ML);
+  saveToMyFoods(f);
+  ["cname","ccal","cpro","ccarb","cfat","cfib","csug","csod"].forEach(function(id){gel(id).value="";});
+  showToast("ADDED & SAVED");renderFoodLog();renderMacroSummary();if(CV==="home")renderHome();
+}
+function saveToMyFoods(f){
+  var key=f.name.trim().toLowerCase();
+  if(!key)return;
+  var existing=MY_FOODS.findIndex(function(x){return x.name.trim().toLowerCase()===key;});
+  var entry={name:f.name,cal:f.cal||0,pro:f.pro||0,carb:f.carb||0,fat:f.fat||0,fiber:f.fiber||0,sugar:f.sugar||0,sodium:f.sodium||0,savedAt:Date.now()};
+  if(existing>=0)MY_FOODS[existing]=entry;else MY_FOODS.unshift(entry);
+  if(MY_FOODS.length>500)MY_FOODS=MY_FOODS.slice(0,500);
+  saveKey(PFX+"myfoods",MY_FOODS);
+  if(window.syncMyFoodsToCloud)window.syncMyFoodsToCloud(entry);
+}
+function removeFood(id){ML[TODAY]=(ML[TODAY]||[]).filter(function(f){return f.id!==id;});saveKey(PFX+"meals",ML);renderFoodLog();renderMacroSummary();if(CV==="home")renderHome();}
+function renderFoodLog(){
+  var meals=ML[TODAY]||[];var fl=gel("flog");fl.innerHTML="";
+  if(!meals.length){fl.innerHTML="<div style='text-align:center;padding:30px 0;color:var(--mut)'><div style='font-size:36px;margin-bottom:8px'>&#127869;</div><div style='font-family:Barlow Condensed,sans-serif;font-size:16px'>No food logged yet today.</div></div>";return;}
+  var MTS=["Breakfast","Morning Snack","Lunch","Pre-Workout","Post-Workout","Dinner","Evening Snack"];
+  MTS.forEach(function(mt){
+    var items=meals.filter(function(f){return f.mt===mt;});if(!items.length)return;
+    var wrap=document.createElement("div");wrap.style.marginBottom="14px";
+    var hdr=document.createElement("div");hdr.style.cssText="font-family:Barlow Condensed,sans-serif;font-weight:800;font-size:13px;color:var(--acc);letter-spacing:1px;margin-bottom:6px";hdr.textContent=mt.toUpperCase();wrap.appendChild(hdr);
+    var card=document.createElement("div");card.className="card";card.style.padding="4px 0";
+    items.forEach(function(f,idx){
+      var row=document.createElement("div");row.style.cssText="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:"+(idx<items.length-1?"1px solid var(--bor)":"none");
+      var left=document.createElement("div");left.style.flex="1";
+      left.innerHTML="<div style='font-family:Barlow Condensed,sans-serif;font-weight:700;font-size:15px'>"+f.name+"</div><div style='font-size:11px;color:var(--mut);margin-top:1px'>"+f.pro+"g pro - "+f.carb+"g carbs - "+f.fat+"g fat</div>";
+      var right=document.createElement("div");right.style.cssText="display:flex;align-items:center;gap:10px";
+      var cv=document.createElement("div");cv.style.cssText="font-family:Barlow Condensed,sans-serif;font-weight:900;font-size:16px;color:var(--acc)";cv.textContent=f.cal;
+      var xb=document.createElement("button");xb.style.cssText="background:none;border:none;color:var(--mut);font-size:20px;cursor:pointer;padding:2px 6px";xb.innerHTML="&times;";
+      xb.onclick=(function(fid){return function(){removeFood(fid);};})(f.id);
+      right.appendChild(cv);right.appendChild(xb);row.appendChild(left);row.appendChild(right);card.appendChild(row);
+    });
+    wrap.appendChild(card);fl.appendChild(wrap);
+  });
+}
+function setNutTab(t){
+  NT=t;["meals","macros","tips"].forEach(function(x){gel("nt-"+x).classList.toggle("on",x===t);gel("np-"+x).style.display=x===t?"block":"none";});
+  if(t==="macros")renderMacroProgress();else if(t==="meals"){renderMacroSummary();renderFoodLog();}
+}
+function setFoodTab(t){FT=t;gel("fts").classList.toggle("on",t==="search");gel("ftc").classList.toggle("on",t==="custom");gel("fp-search").style.display=t==="search"?"block":"none";gel("fp-custom").style.display=t==="custom"?"block":"none";}
+function renderFuel(){renderMacroSummary();renderFoodLog();renderMyFoods();if(NT==="macros")renderMacroProgress();}
+function renderMyFoods(){
+  var hdr=gel("myfoods-hdr"),list=gel("myfoods-list");if(!list)return;
+  if(!MY_FOODS.length){hdr.style.display="none";list.innerHTML="";return;}
+  hdr.style.display="block";hdr.innerHTML="My Saved Foods <span style='font-size:9px;background:var(--acc-bg);color:var(--acc);padding:2px 7px;border-radius:5px;letter-spacing:1px;margin-left:6px'>FAMILY SYNCED</span>";
+  list.innerHTML="";
+  var card=document.createElement("div");card.className="card";card.style.padding="4px 0";
+  MY_FOODS.slice(0,30).forEach(function(f,idx){
+    var row=document.createElement("div");row.style.cssText="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:"+(idx<Math.min(29,MY_FOODS.length-1)?"1px solid var(--bor)":"none");
+    var left=document.createElement("div");left.style.flex="1";
+    var byTxt=f.savedBy?" - added by "+f.savedBy:"";
+    left.innerHTML="<div style='font-family:Barlow Condensed,sans-serif;font-weight:700;font-size:14px'>"+f.name+"</div><div style='font-size:11px;color:var(--mut);margin-top:1px'>"+f.cal+" kcal - "+f.pro+"g pro - "+f.carb+"g carbs - "+f.fat+"g fat"+byTxt+"</div>";
+    var right=document.createElement("div");right.style.cssText="display:flex;align-items:center;gap:8px;flex-shrink:0";
+    var ab=document.createElement("button");ab.style.cssText="background:var(--acc);color:#0a0612;border:none;border-radius:7px;padding:6px 12px;font-family:Barlow Condensed,sans-serif;font-weight:800;font-size:12px;cursor:pointer";ab.textContent="+ ADD";
+    ab.onclick=(function(fd){return function(){gel("mtime").value=gel("mtime").value||"Breakfast";addFood(fd);};})(f);
+    var xb=document.createElement("button");xb.style.cssText="background:none;border:none;color:var(--mut);font-size:20px;cursor:pointer;padding:2px 6px";xb.innerHTML="&times;";
+    xb.onclick=(function(n){return function(){if(confirm("Remove \""+n+"\" from family food list?"))removeFromMyFoods(n);};})(f.name);
+    right.appendChild(ab);right.appendChild(xb);row.appendChild(left);row.appendChild(right);card.appendChild(row);
+  });
+  list.appendChild(card);
+  if(MY_FOODS.length>30){var more=document.createElement("div");more.style.cssText="text-align:center;font-size:11px;color:var(--mut);padding:10px";more.textContent="+ "+(MY_FOODS.length-30)+" more (use search to find them)";list.appendChild(more);}
+}
+function renderMacroSummary(){
+  var meals=ML[TODAY]||[];
+  var tc=meals.reduce(function(a,m){return a+(m.cal||0);},0),tp=meals.reduce(function(a,m){return a+(m.pro||0);},0),tcarb=meals.reduce(function(a,m){return a+(m.carb||0);},0),tf=meals.reduce(function(a,m){return a+(m.fat||0);},0);
+  var m=getMacros();var pct=m.cal?Math.min(100,Math.round(tc/m.cal*100)):0;
+  var ms=gel("msum");ms.innerHTML="";
+  var t=document.createElement("div");t.style.cssText="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px";
+  t.innerHTML="<div style='font-family:Barlow Condensed,sans-serif;font-weight:900;font-size:28px;color:var(--acc)'>"+tc+" cal</div><div style='text-align:right'><div style='font-family:Barlow Condensed,sans-serif;font-weight:700;font-size:12px;color:var(--mut)'>GOAL</div><div style='font-family:Barlow Condensed,sans-serif;font-weight:700;font-size:18px'>"+(m.cal||"--")+" kcal</div></div>";
+  ms.appendChild(t);
+  var bar=document.createElement("div");bar.style.cssText="height:8px;border-radius:4px;background:rgba(255,255,255,0.07);overflow:hidden;margin-bottom:14px";
+  var fill=document.createElement("div");fill.style.cssText="height:100%;width:"+pct+"%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:4px";bar.appendChild(fill);ms.appendChild(bar);
+  var grid=document.createElement("div");grid.style.cssText="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px";
+  [["Protein",tp,m.pro,"#60a5fa"],["Carbs",tcarb,m.carb,"#34d399"],["Fat",tf,m.fat,"#fbbf24"]].forEach(function(x){
+    var over=x[2]&&x[1]>x[2];var box=document.createElement("div");
+    box.style.cssText="background:var(--c2);border-radius:10px;padding:10px 8px;text-align:center";
+    box.innerHTML="<div style='font-family:Barlow Condensed,sans-serif;font-weight:900;font-size:20px;color:"+(over?"#f87171":x[3])+"'>"+x[1]+"g</div><div style='font-size:10px;color:var(--mut);letter-spacing:1px'>"+x[0].toUpperCase()+"</div><div style='font-size:10px;color:var(--mut)'>/ "+(x[2]||"--")+"g</div>";
+    grid.appendChild(box);
+  });
+  ms.appendChild(grid);
+}
+function renderMacroProgress(){
+  var meals=ML[TODAY]||[];
+  var tc=meals.reduce(function(a,m){return a+(m.cal||0);},0),tp=meals.reduce(function(a,m){return a+(m.pro||0);},0),tcarb=meals.reduce(function(a,m){return a+(m.carb||0);},0),tf=meals.reduce(function(a,m){return a+(m.fat||0);},0);
+  var tfib=meals.reduce(function(a,m){return a+(m.fiber||0);},0),tsug=meals.reduce(function(a,m){return a+(m.sugar||0);},0),tsod=meals.reduce(function(a,m){return a+(m.sodium||0);},0);
+  var m=getMacros();
+  gel("mctl").textContent=m.calLabel||"Enter weight";
+  gel("mcsub").textContent=m.calSub||"Enter bodyweight for personalized targets";
+  var mp=gel("mprog");mp.innerHTML="";
+  var hdr=document.createElement("div");hdr.style.cssText="font-family:Barlow Condensed,sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:var(--mut);margin-bottom:14px";hdr.textContent="TODAY'S PROGRESS";mp.appendChild(hdr);
+  [["Calories",tc,m.cal,"var(--acc)"],["Protein",tp,m.pro,"#60a5fa"],["Carbs",tcarb,m.carb,"#34d399"],["Fat",tf,m.fat,"#fbbf24"],["Fiber",Math.round(tfib*10)/10,30,"#a78bfa"],["Sugar",Math.round(tsug*10)/10,50,"#f472b6"],["Sodium",tsod,2300,"#fb923c"]].forEach(function(b){
+    var pct=b[2]?Math.min(100,Math.round(b[1]/b[2]*100)):0;
+    var isLimit=(b[0]==="Sugar"||b[0]==="Sodium");
+    var over=b[2]&&b[1]>b[2];
+    var color=isLimit?(over?"#f87171":b[3]):(over?"#f87171":b[3]);
+    var unit=b[0]==="Calories"?"":(b[0]==="Sodium"?" mg":" g");
+    var wrap=document.createElement("div");wrap.style.marginBottom="14px";
+    var top=document.createElement("div");top.style.cssText="display:flex;justify-content:space-between;margin-bottom:5px";
+    var lbl=document.createElement("span");lbl.style.cssText="font-family:Barlow Condensed,sans-serif;font-weight:700;font-size:14px";lbl.textContent=b[0]+(isLimit?" (limit)":"");
+    var val=document.createElement("span");val.style.cssText="font-family:Barlow Condensed,sans-serif;font-weight:900;font-size:14px;color:"+color;val.textContent=b[1]+unit;
+    var sub=document.createElement("span");sub.style.cssText="color:var(--mut);font-size:12px";sub.textContent=" / "+(b[2]||"--")+unit;
+    val.appendChild(sub);top.appendChild(lbl);top.appendChild(val);
+    var track=document.createElement("div");track.style.cssText="height:8px;border-radius:4px;background:rgba(255,255,255,0.07);overflow:hidden";
+    var fi=document.createElement("div");fi.style.cssText="height:100%;width:"+pct+"%;background:"+color+";border-radius:4px;transition:width .4s";
+    track.appendChild(fi);wrap.appendChild(top);wrap.appendChild(track);mp.appendChild(wrap);
+  });
+  var note=document.createElement("div");note.style.cssText="font-size:12px;color:var(--mut);margin-top:4px;line-height:1.5";note.textContent="Fiber target: 30g for fat loss satiety. Sugar/sodium are daily limits, not targets.";mp.appendChild(note);
+}
+
+// Home glance card
+function renderHomeGlance(){
+  var meals=ML[TODAY]||[];
+  var tc=meals.reduce(function(a,m){return a+(m.cal||0);},0),tp=meals.reduce(function(a,m){return a+(m.pro||0);},0),tcarb=meals.reduce(function(a,m){return a+(m.carb||0);},0),tf=meals.reduce(function(a,m){return a+(m.fat||0);},0);
+  var wk=WL.filter(function(l){return daysAgo(l.date)<=7;});
+  var m=getMacros();
+  var gl=gel("hglance");if(!gl)return;gl.innerHTML="";
+  var card=document.createElement("div");card.className="card cp";card.style.marginBottom="10px";
+  var calPct=m.cal?Math.min(100,Math.round(tc/m.cal*100)):0;
+  var remain=m.cal?m.cal-tc:null;
+  card.innerHTML="<div style='margin-bottom:10px'><div style='font-family:Barlow Condensed,sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:var(--mut)'>CALORIES TODAY</div><div style='display:flex;align-items:baseline;gap:6px;margin-top:3px'><span style='font-family:Barlow Condensed,sans-serif;font-weight:900;font-size:36px;line-height:1;color:var(--acc)'>"+tc+"</span><span style='font-size:13px;color:var(--mut)'>"+(m.cal?"/ "+m.cal+" kcal":"")+"</span><span style='font-family:Barlow Condensed,sans-serif;font-weight:900;font-size:15px;color:"+(remain!==null&&remain<=0?"#22c55e":"var(--acc)")+";margin-left:auto'>"+(remain!==null?(remain>0?remain+" left":"Done!"):"")+"</span></div></div><div style='height:8px;border-radius:4px;background:rgba(255,255,255,0.07);overflow:hidden;margin-bottom:12px'><div style='height:100%;width:"+calPct+"%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:4px'></div></div>";
+  var grid=document.createElement("div");grid.style.cssText="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px";
+  [["PROTEIN",tp,m.pro,"#60a5fa"],["CARBS",tcarb,m.carb,"#34d399"],["FAT",tf,m.fat,"#fbbf24"]].forEach(function(x){
+    var pct=x[2]?Math.min(100,Math.round(x[1]/x[2]*100)):0;var over=x[2]&&x[1]>x[2];
+    var box=document.createElement("div");
+    box.innerHTML="<div style='display:flex;justify-content:space-between;margin-bottom:4px'><span style='font-family:Barlow Condensed,sans-serif;font-weight:700;font-size:12px;color:"+(over?"#f87171":x[3])+"'>"+x[0]+"</span><span style='font-size:11px;color:var(--mut)'>"+x[1]+"g</span></div><div style='height:5px;border-radius:3px;background:rgba(255,255,255,0.07);overflow:hidden'><div style='height:100%;width:"+pct+"%;background:"+(over?"#f87171":x[3])+";border-radius:3px'></div></div><div style='font-size:10px;color:var(--mut);margin-top:3px'>"+(x[2]?"/ "+x[2]+"g":"")+"</div>";
+    grid.appendChild(box);
+  });
+  card.appendChild(grid);
+  if(!m.cal){var hint=document.createElement("div");hint.style.cssText="font-size:11px;color:var(--acc);margin-top:10px;text-align:center";hint.textContent="Enter weight to personalize macro goals";card.appendChild(hint);}
+  gl.appendChild(card);
+  var sg=document.createElement("div");sg.className="stat-grid";
+  var wb=document.createElement("div");wb.className="stat-box";wb.innerHTML="<div class='stat-num'>"+(WA[TODAY]||0)+"</div><div class='stat-lbl'>Cups of Water</div>";
+  var sb=document.createElement("div");sb.className="stat-box";sb.innerHTML="<div class='stat-num'>"+wk.length+"</div><div class='stat-lbl'>Sets This Week</div>";
+  sg.appendChild(wb);sg.appendChild(sb);gl.appendChild(sg);
+}
+
+// Goals and Recent
+function renderGoalsList(){
+  var gs=getGoals(),gl=gel("goals");gl.innerHTML="";
+  gs.forEach(function(g,i){
+    var row=document.createElement("div");row.style.cssText="display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:"+(i<gs.length-1?"1px solid var(--bor)":"none");
+    var dot=document.createElement("div");dot.style.cssText="width:7px;height:7px;border-radius:50%;background:"+(g.done?"#22c55e":"var(--acc)")+";flex-shrink:0;margin-top:5px";
+    var txt=document.createElement("div");txt.style.cssText="font-size:13px;line-height:1.5;color:"+(g.done?"#86efac":"var(--fg)");txt.textContent=g.txt;
+    row.appendChild(dot);row.appendChild(txt);gl.appendChild(row);
+  });
+}
+function renderRecent(){
+  gel("rech").style.display=WL.length?"block":"none";
+  var rl=gel("reclist");rl.innerHTML="";
+  WL.slice(0,4).forEach(function(log){
+    var d=document.createElement("div");d.style.cssText="border-left:3px solid var(--acc);padding-left:14px;margin-bottom:14px";
+    d.innerHTML="<div style='display:flex;justify-content:space-between'><div style='font-family:Barlow Condensed,sans-serif;font-weight:700;font-size:17px'>"+log.ex+"</div><div style='font-size:11px;color:var(--mut)'>"+log.date+"</div></div><div style='font-size:13px;color:rgba(255,255,255,0.42);margin-top:3px'>"+log.sets.map(function(s){return s.w?s.w+"lbs x "+s.r:s.r;}).join(" - ")+"</div>"+(log.note?"<div style='font-size:12px;color:var(--mut);font-style:italic;margin-top:2px'>"+log.note+"</div>":"");
+    rl.appendChild(d);
+  });
+}
+
+// Persistence
+window.addEventListener("pagehide",function(){saveAll();},true);
+window.addEventListener("beforeunload",function(){saveAll();},true);
+window.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden")saveAll();},true);
+setInterval(function(){saveAll();},15000);
+
+var FPROG=[
+  {day:"MON",name:"Legs and Cardio",ex:[
+    {n:"Leg Press",s:4,r:"10-12",tip:"Feet shoulder width, full range of motion"},
+    {n:"Leg Extensions",s:3,r:"12-15",tip:"Controlled up, slow lower"},
+    {n:"Barbell Lunges",s:3,r:"10 ea",tip:"Long stride, keep chest up"},
+    {n:"Back Reverse Extensions",s:3,r:15,tip:"Squeeze glutes at top"},
+    {n:"Crunches",s:3,r:20,tip:"Lower back stays on floor"},
+    {n:"10 min Bike",s:"endurance",r:"10 min",tip:"Moderate pace, keep heart rate up"}
+  ]},
+  {day:"TUE",name:"Upper Push",ex:[
+    {n:"Chest Flys",s:3,r:12,tip:"Full stretch at bottom, squeeze at top"},
+    {n:"Tricep Press",s:3,r:12,tip:"Elbows in - do not flare out"},
+    {n:"Shoulder Raises",s:3,r:"12-15",tip:"Slow and controlled - no swinging"},
+    {n:"Pushups",s:3,r:"max",tip:"Full range - chest to floor"},
+    {n:"Ab Rotations",s:3,r:20,tip:"Rotate fully each side"},
+    {n:"5 min Row Machine",s:"endurance",r:"5 min",tip:"Strong pull, drive with legs first"}
+  ]},
+  {day:"WED",name:"Upper Pull",ex:[
+    {n:"Pull Downs",s:4,r:"10-12",tip:"Pull to upper chest, squeeze shoulder blades"},
+    {n:"Reverse Back Flys",s:3,r:"12-15",tip:"Squeeze shoulder blades together at top"},
+    {n:"Bicep Curls",s:3,r:12,tip:"Full range - squeeze at top"},
+    {n:"Hammer Curls",s:3,r:12,tip:"Neutral grip - works brachialis too"},
+    {n:"V Sit Ups",s:3,r:15,tip:"Legs and chest meet in the middle"},
+    {n:"10 min Bike",s:"endurance",r:"10 min",tip:"Push the pace - stay consistent"}
+  ]},
+  {day:"THU",name:"Power and Core",ex:[
+    {n:"Squat",s:4,r:"8-10",tip:"Depth below parallel, drive knees out"},
+    {n:"Box Jumps",s:4,r:5,tip:"Max height, step down carefully"},
+    {n:"Sled Push",s:3,r:"20m",tip:"Low body position, drive hard"},
+    {n:"Tricep Rows",s:3,r:12,tip:"Keep elbows pinned to sides"},
+    {n:"Crunches",s:3,r:20,tip:"Controlled tempo"},
+    {n:"5 min Row Machine",s:"endurance",r:"5 min",tip:"All out effort - beat your time"}
+  ]},
+  {day:"FRI",name:"Full Body",ex:[
+    {n:"Leg Press",s:3,r:15,tip:"Higher reps today - muscle endurance"},
+    {n:"Pull Downs",s:3,r:12,tip:"Focus on form - full stretch at top"},
+    {n:"Chest Flys",s:3,r:12,tip:"Slow eccentric - feel the stretch"},
+    {n:"Shoulder Raises",s:3,r:15,tip:"Light weight - full range"},
+    {n:"V Sit Ups",s:3,r:15,tip:"Core is everything"},
+    {n:"10 min Bike",s:"endurance",r:"10 min",tip:"Finish strong"}
+  ]},
+  {day:"SAT",name:"Arms and Abs",ex:[
+    {n:"Bicep Curls",s:3,r:12,tip:"Alternate arms or together"},
+    {n:"Hammer Curls",s:3,r:12,tip:"Slow down - squeeze at top"},
+    {n:"Tricep Press",s:3,r:15,tip:"Full lockout at bottom"},
+    {n:"Ab Rotations",s:3,r:20,tip:"Feet up for extra challenge"},
+    {n:"Pushups",s:3,r:"max",tip:"Go to failure each set"},
+    {n:"5 min Row Machine",s:"endurance",r:"5 min",tip:"Focus on technique"}
+  ]},
+  {day:"SUN",name:"Active Recovery",ex:[
+    {n:"Back Reverse Extensions",s:2,r:15,tip:"Light and controlled"},
+    {n:"Crunches",s:2,r:20,tip:"Easy pace - recovery day"},
+    {n:"V Sit Ups",s:2,r:12,tip:"Slow and controlled"},
+    {n:"Pushups",s:2,r:15,tip:"Easy effort"},
+    {n:"Leg Extensions",s:2,r:15,tip:"Light weight - flush the legs"},
+    {n:"10 min Bike",s:"endurance",r:"10 min",tip:"Very easy pace - zone 2"}
+  ]}
+];
+
+var LNAMES=["Back Squat","Bench Press","Overhead Press","Barbell Row","Goblet Squat","Pull-ups (max reps)","Push-ups (max reps)","Plank (max sec)"];
+var SNAMES=["Body Fat %","Waist (in)","Chest (in)","Resting Heart Rate","5K Walk Time","Incline Walk Distance (30 min)"];
+
+var GPROG=[
+  {day:"MON",name:"Lower Body + Incline Walk",ex:[{n:"Goblet Squat",s:4,r:12,intensity:0.30,tip:"Hold dumbbell at chest, depth below parallel"},{n:"Leg Press",s:3,r:"12-15",intensity:0.70,tip:"Full range - controlled, no half reps"},{n:"Leg Curl",s:3,r:12,tip:"Slow on the way down - feel the hamstring stretch"},{n:"Leg Extensions",s:3,r:15,tip:"Pause and squeeze at top for 1 sec"},{n:"Calf Raises",s:3,r:20,tip:"Full stretch at bottom, pause at top"},{n:"Incline Walk",s:"endurance",r:"20 min @ 12% / 3.0 mph",tip:"Should not be able to sing - fat burn zone"}]},
+  {day:"TUE",name:"Upper Push + Incline Walk",ex:[{n:"Bench Press",s:4,r:10,intensity:0.68,tip:"Touch chest, controlled tempo - no bouncing"},{n:"Incline Dumbbell Press",s:3,r:12,intensity:0.30,tip:"45 degree incline - works upper chest"},{n:"Overhead Press",s:3,r:10,intensity:0.62,tip:"Brace core - no lower back arch"},{n:"Lateral Raises",s:3,r:15,tip:"Light weight - slow and controlled, no swinging"},{n:"Tricep Pushdown",s:3,r:12,tip:"Elbows pinned to sides - full extension"},{n:"Incline Walk",s:"endurance",r:"20 min @ 12% / 3.0 mph",tip:"Steady pace - keep heart rate up"}]},
+  {day:"WED",name:"Cardio & Core",ex:[{n:"Incline Walk",s:"endurance",r:"30 min @ 15% / 3.0 mph",tip:"Long steady-state - prime fat burn"},{n:"Plank Hold",s:3,r:"60 sec",tip:"Body straight - no sagging hips"},{n:"Russian Twists",s:3,r:"20 ea",tip:"Slow and controlled - feel the obliques"},{n:"Dead Bug",s:3,r:"10 ea",tip:"Lower back stays flat on floor"},{n:"Bird Dog",s:3,r:"10 ea",tip:"Opposite arm and leg - hold 2 sec"}]},
+  {day:"THU",name:"Upper Pull + Incline Walk",ex:[{n:"Lat Pulldown",s:4,r:"10-12",intensity:0.55,tip:"Pull to upper chest, full stretch at top"},{n:"Cable Row",s:3,r:12,intensity:0.50,tip:"Pull to belly, squeeze shoulder blades"},{n:"Reverse Pec Deck",s:3,r:15,tip:"Squeeze shoulder blades - great for posture"},{n:"Bicep Curls",s:3,r:12,tip:"Full range - squeeze at top, slow on the way down"},{n:"Hammer Curls",s:3,r:12,tip:"Neutral grip - works brachialis and forearms"},{n:"Incline Walk",s:"endurance",r:"20 min @ 12% / 3.0 mph",tip:"Steady pace through the burn"}]},
+  {day:"FRI",name:"Full Body Conditioning",ex:[{n:"Goblet Squat",s:3,r:15,intensity:0.25,tip:"Higher reps - go for the burn"},{n:"Push-ups",s:3,r:"max",tip:"Track reps each set - improve weekly"},{n:"Dumbbell Row",s:3,r:"12 ea",intensity:0.35,tip:"Brace core - no twisting"},{n:"Walking Lunges",s:3,r:"10 ea",tip:"Long stride, knee tracks over toe"},{n:"Plank Hold",s:3,r:"60 sec",tip:"Squeeze glutes and abs together"},{n:"Incline Walk",s:"endurance",r:"15 min @ 15% / 3.2 mph",tip:"Push the pace - finisher cardio"}]},
+  {day:"SAT",name:"Long Walk + Core",ex:[{n:"Incline Walk",s:"endurance",r:"40 min @ 12% / 3.2 mph",tip:"Longest session of the week - burn extra fat"},{n:"Plank Hold",s:3,r:"60 sec",tip:"Perfect form over time"},{n:"Bicycle Crunches",s:3,r:"20 ea",tip:"Slow rotations - elbow to opposite knee"},{n:"Side Plank",s:2,r:"45 sec ea",tip:"Hips up - squeeze obliques"}]},
+  {day:"SUN",name:"Rest and Mobility",ex:[{n:"Easy Walk",s:"endurance",r:"20 min flat",tip:"Recovery pace - just keep moving"},{n:"Hip Flexor Stretch",s:2,r:"60 sec ea",tip:"Sitting all week makes these tight"},{n:"Chest Opener Stretch",s:2,r:"45 sec ea",tip:"Doorway stretch - opens up tight chest"},{n:"Foam Roll",s:1,r:"10 min",tip:"Quads, hamstrings, IT band, upper back"}]}
+];
+
+var HPROG=[
+  {day:"MON",name:"Lower Body Home",ex:[{n:"Goblet Squat",s:4,r:12,tip:"Dumbbell or kettlebell at chest - depth below parallel"},{n:"Reverse Lunges",s:3,r:"12 ea",tip:"Step back, drop knee, drive up through front heel"},{n:"Glute Bridge",s:3,r:20,tip:"Squeeze glutes hard at top - 2 sec hold"},{n:"Single-Leg Glute Bridge",s:3,r:"12 ea",tip:"One foot up, drive through the planted heel, squeeze glute"},{n:"Calf Raises",s:3,r:25,tip:"Full range - use stairs for extra stretch"},{n:"Walk Outside",s:"endurance",r:"20 min hilly",tip:"Find a hill or stairs - push the pace uphill"}]},
+  {day:"TUE",name:"Upper Push Home",ex:[{n:"Push-ups",s:4,r:"max",tip:"Chest to floor - track reps each session"},{n:"Pike Push-ups",s:3,r:12,tip:"Hips high, push through shoulders"},{n:"DB Shoulder Press",s:3,r:12,tip:"Or use water jugs - 8-12 lbs each"},{n:"Tricep Dips (chair)",s:3,r:15,tip:"Elbows straight back - feel triceps work"},{n:"Lateral Raises",s:3,r:15,tip:"Light - controlled - thumbs up"},{n:"Walk Outside",s:"endurance",r:"20 min hilly",tip:"Steady pace - find some inclines"}]},
+  {day:"WED",name:"Walk + Core",ex:[{n:"Walk Outside",s:"endurance",r:"30 min hills",tip:"Find the steepest hills you can"},{n:"Plank Hold",s:3,r:"60 sec",tip:"Body straight - no sagging"},{n:"Dead Bug",s:3,r:"10 ea",tip:"Slow and controlled - lower back flat"},{n:"Russian Twists",s:3,r:"20 ea",tip:"Feet up for extra challenge"},{n:"Bird Dog",s:3,r:"10 ea",tip:"Hold 2 sec at full extension"}]},
+  {day:"THU",name:"Upper Pull Home",ex:[{n:"Bent Over DB Row",s:4,r:12,tip:"Bend at hips, flat back, row to belly"},{n:"Reverse Fly (DBs)",s:3,r:15,tip:"Bend forward, lift DBs out to sides"},{n:"Bicep Curls",s:3,r:12,tip:"Full range - no swinging"},{n:"Hammer Curls",s:3,r:12,tip:"Neutral grip - slow controlled tempo"},{n:"Superman Hold",s:3,r:12,tip:"Lift chest and legs - hold 2 sec"},{n:"Walk Outside",s:"endurance",r:"20 min hilly",tip:"Push the uphills"}]},
+  {day:"FRI",name:"Full Body Home",ex:[{n:"Goblet Squat",s:3,r:15,tip:"Burn out - higher reps"},{n:"Push-ups",s:3,r:"max",tip:"Track and beat your best"},{n:"Single-Arm DB Row",s:3,r:"12 ea",tip:"Hand on couch for support, row hard"},{n:"Walking Lunges",s:3,r:"10 ea",tip:"Long stride, knee tracks over toe"},{n:"Plank Hold",s:3,r:"60 sec",tip:"Squeeze glutes and abs together"},{n:"Walk Outside",s:"endurance",r:"15 min brisk",tip:"Finisher cardio - push the pace"}]},
+  {day:"SAT",name:"Long Walk + Core",ex:[{n:"Walk Outside",s:"endurance",r:"40 min hilly",tip:"Long steady walk - the fat burner"},{n:"Plank Hold",s:3,r:"60 sec",tip:"Perfect form over time"},{n:"Bicycle Crunches",s:3,r:"20 ea",tip:"Slow rotations - elbow to opposite knee"},{n:"Side Plank",s:2,r:"45 sec ea",tip:"Hips up - squeeze obliques"}]},
+  {day:"SUN",name:"Rest and Mobility",ex:[{n:"Easy Walk",s:"endurance",r:"20 min flat",tip:"Recovery pace"},{n:"Hip Flexor Stretch",s:2,r:"60 sec ea",tip:"Sitting all week makes these tight"},{n:"Chest Opener Stretch",s:2,r:"45 sec ea",tip:"Doorway stretch opens up tight chest"},{n:"Foam Roll",s:1,r:"10 min",tip:"Focus on quads, hamstrings, IT band, upper back"}]}
+];
+
+function calcW(n,i){
+  if(!i)return null;var bw=getBW();
+  var sq=getPRN(LP,"Back Squat"),bp=getPRN(LP,"Bench Press"),op=getPRN(LP,"Overhead Press"),gs=getPRN(LP,"Goblet Squat");
+  var m={"Back Squat":sq,"Bench Press":bp,"Overhead Press":op||(bp?bp*0.62:null),
+    "Barbell Row":bp?bp*0.75:null,"Cable Row":bp?bp*0.50:(bw?bw*0.5:null),
+    "Goblet Squat":gs||(sq?sq*0.30:(bw?bw*0.30:null)),
+    "Incline Dumbbell Press":bp?bp*0.30:null,
+    "Leg Press":sq?sq*1.4:(bw?bw*1.5:null),
+    "Lat Pulldown":bw?bw*0.55:null,
+    "Dumbbell Row":bp?bp*0.35:null,
+    "Bent Over DB Row":bp?bp*0.35:null};
+  var b=m[n];if(!b)return null;return r5(b*i);
+}
+function getMacros(){
+  var bw=getBW(),tgt=ST.target?parseFloat(ST.target.replace(/[^0-9.]/g,"")):null;
+  if(tgt&&isNaN(tgt))tgt=null;
+  var gw=tgt||bw;
+  if(!gw)return{cal:null,pro:null,carb:null,fat:null,calLabel:"--- kcal",calSub:"Enter weight and target weight for personalized goals"};
+  var cal=r5(gw*12),pro=r5(gw*1.0),fat=r5(gw*0.4);
+  var carbCal=cal-(pro*4)-(fat*9);var carb=Math.max(0,r5(carbCal/4));
+  var basis=tgt?"target "+tgt+" lbs":"current "+gw+" lbs";
+  return{cal:cal,pro:pro,carb:carb,fat:fat,
+    calLabel:r5(gw*11)+"-"+r5(gw*13)+" kcal",calSub:"Fat-loss cut - based on "+basis};
+}
+function getGoals(){
+  var bw=getBW(),tgt=ST.target?parseFloat(ST.target.replace(/[^0-9.]/g,"")):null;
+  if(tgt&&isNaN(tgt))tgt=null;
+  var sq=getPRN(LP,"Back Squat"),bp=getPRN(LP,"Bench Press"),pu=getPRN(LP,"Pull-ups (max reps)"),pups=getPRN(LP,"Push-ups (max reps)"),pl=getPRN(LP,"Plank (max sec)");
+  var bf=RP["Body Fat %"]?parseFloat(RP["Body Fat %"].val):null;
+  var g=[];
+  if(bw&&tgt){var diff=Math.round(bw-tgt);g.push(diff>0?{txt:"Reach target weight - "+diff+" lbs to lose ("+bw+" to "+tgt+")",done:false}:diff===0?{txt:"Target weight reached at "+tgt+" lbs!",done:true}:{txt:"Below target - "+Math.abs(diff)+" lbs under "+tgt,done:true});}
+  else g.push({txt:"Enter current and target weight to track fat loss",done:false});
+  if(bw){
+    g.push(bp?(bp>=bw?{txt:"Bench bodyweight DONE ("+bp+" lbs) - Next: "+r5(bw*1.1)+" lbs",done:true}:{txt:"Bench press bodyweight - "+r5(bw)+" lbs  (now: "+bp+" lbs)",done:false}):{txt:"Bench press bodyweight - target "+r5(bw)+" lbs",done:false});
+    g.push(sq?(sq>=bw*1.25?{txt:"Squat 1.25x BW DONE ("+sq+" lbs) - Next: "+r5(bw*1.5)+" lbs",done:true}:{txt:"Squat 1.25x bodyweight - "+r5(bw*1.25)+" lbs  (now: "+sq+" lbs)",done:false}):{txt:"Squat 1.25x bodyweight - target "+r5(bw*1.25)+" lbs",done:false});
+  }else{g.push({txt:"Bench press bodyweight - enter weight",done:false});g.push({txt:"Squat 1.25x bodyweight - enter weight",done:false});}
+  g.push(pups?(pups>=25?{txt:"25 push-ups DONE ("+pups+") - Next: 40 reps",done:true}:{txt:"25 consecutive push-ups  (now: "+pups+")",done:false}):{txt:"25 consecutive push-ups",done:false});
+  g.push(pu?(pu>=8?{txt:"8 pull-ups DONE ("+pu+") - Next: 12 reps",done:true}:{txt:"8 strict pull-ups  (now: "+pu+")",done:false}):{txt:"8 strict pull-ups",done:false});
+  g.push(pl?(pl>=120?{txt:"2-min plank DONE ("+pl+" sec) - Next: 3 min",done:true}:{txt:"2-minute plank hold  (now: "+pl+" sec)",done:false}):{txt:"2-minute plank hold",done:false});
+  g.push(bf?(bf<=18?{txt:"Body fat under 18% DONE ("+bf+"%) - Next: 15%",done:true}:{txt:"Body fat under 18%  (now: "+bf+"%)",done:false}):{txt:"Body fat under 18% - log in Records",done:false});
+  return g;
+}
+function renderWeightProg(){
+  var bw=getBW(),tgt=ST.target?parseFloat(ST.target.replace(/[^0-9.]/g,"")):null;
+  if(tgt&&isNaN(tgt))tgt=null;
+  var el=gel("wtprog");if(!el)return;if(!bw||!tgt){el.innerHTML="";return;}
+  var diff=Math.round(bw-tgt);
+  var pct;if(diff<=0){pct=100;}else{var start=ST.startWeight?parseFloat(String(ST.startWeight).replace(/[^0-9.]/g,"")):null;if(!start||isNaN(start)||start<=tgt)start=bw+diff;var lost=Math.max(0,start-bw);var need=Math.max(1,start-tgt);pct=Math.min(100,Math.round((lost/need)*100));}
+  el.innerHTML="<div style='font-family:Barlow Condensed,sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:var(--mut);margin-bottom:6px'>FAT-LOSS PROGRESS</div><div style='display:flex;justify-content:space-between;margin-bottom:5px'><span style='font-family:Barlow Condensed,sans-serif;font-weight:700;font-size:13px'>"+bw+" lbs</span><span style='font-family:Barlow Condensed,sans-serif;font-weight:900;font-size:13px;color:var(--acc)'>"+tgt+" lbs target</span></div><div style='height:8px;border-radius:4px;background:rgba(255,255,255,0.07);overflow:hidden;margin-bottom:4px'><div style='height:100%;width:"+pct+"%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:4px'></div></div><div style='font-size:11px;color:var(--mut)'>"+(diff>0?diff+" lbs to lose":diff===0?"Target reached!":Math.abs(diff)+" lbs below target")+"</div>";
+}
+function saveStats(){
+  var h=gel("inh"),w=gel("inw"),t=gel("int");
+  if(h)ST.height=h.value;if(w)ST.weight=w.value;if(t)ST.target=t.value;
+  if(w&&w.value&&!ST.startWeight){var sv=parseFloat(w.value.replace(/[^0-9.]/g,""));if(!isNaN(sv))ST.startWeight=sv;}
+  saveKey(PFX+"stats",ST);renderWeightProg();
+}
+function saveAll(){
+  var h=gel("inh"),w=gel("inw"),t=gel("int");
+  if(h&&h.value)ST.height=h.value;if(w&&w.value)ST.weight=w.value;if(t&&t.value)ST.target=t.value;
+  saveKey(PFX+"stats",ST);saveKey(PFX+"logs",WL);saveKey(PFX+"water",WA);
+  saveKey(PFX+"liftprs",LP);saveKey(PFX+"runprs",RP);saveKey(PFX+"meals",ML);saveKey(PFX+"exweights",EW);
+  saveKey(PFX+"myfoods",MY_FOODS);
+}
+function renderHome(){
+  var bw=getBW(),d=GPROG[TI];
+  gel("tlbl").textContent="TODAY - "+d.day;gel("tname").textContent=d.name;
+  gel("hdr-sub").textContent="Fat Loss & Definition"+(bw?" - "+bw+" lbs":"")+(ST.height?" - "+ST.height:"");
+  gel("bwh").style.display=bw?"none":"block";
+  renderWeightProg();renderHomeGlance();renderGoalsList();renderRecent();
+}
+
+var PFX='kev9_';
+
+// ============ FAMILY FOOD SYNC (Firebase Realtime DB) ============
+var FIREBASE_URL="https://jarvis-family-7e8c9-default-rtdb.firebaseio.com";
+var FAMILY_FOODS_NODE="/family_foods";
+var DEVICE_ID="Kevin";  // change in Lincoln/Camille/Carter copies
+var LAST_CLOUD_KEYS=loadKey('kev9_cloudkeys',{});
+
+function foodKey(name){
+  if(!name)return"";
+  return String(name).trim().toLowerCase()
+    .replace(/[.#$\[\]\/]/g," ")
+    .replace(/\s+/g," ")
+    .replace(/\s/g,"_")
+    .substring(0,180);
+}
+function cloudSaveFood(entry){
+  if(!FIREBASE_URL||!entry||!entry.name)return;
+  var k=foodKey(entry.name);if(!k)return;
+  var payload={name:entry.name,cal:entry.cal||0,pro:entry.pro||0,carb:entry.carb||0,fat:entry.fat||0,fiber:entry.fiber||0,sugar:entry.sugar||0,sodium:entry.sodium||0,savedBy:DEVICE_ID,savedAt:Date.now()};
+  fetch(FIREBASE_URL+FAMILY_FOODS_NODE+"/"+encodeURIComponent(k)+".json",{
+    method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)
+  }).then(function(r){if(r.ok){LAST_CLOUD_KEYS[k]=true;saveKey(PFX+'cloudkeys',LAST_CLOUD_KEYS);}})
+   .catch(function(e){console.warn("Food sync (save) failed:",e);});
+}
+function cloudDeleteFood(name){
+  if(!FIREBASE_URL||!name)return;
+  var k=foodKey(name);if(!k)return;
+  fetch(FIREBASE_URL+FAMILY_FOODS_NODE+"/"+encodeURIComponent(k)+".json",{method:"DELETE"})
+    .then(function(){delete LAST_CLOUD_KEYS[k];saveKey(PFX+'cloudkeys',LAST_CLOUD_KEYS);})
+    .catch(function(e){console.warn("Food sync (delete) failed:",e);});
+}
+function cloudLoadFoods(){
+  if(!FIREBASE_URL)return;
+  fetch(FIREBASE_URL+FAMILY_FOODS_NODE+".json")
+    .then(function(r){return r.ok?r.json():null;})
+    .then(function(data){
+      data=data||{};
+      var cloudKeys={};Object.keys(data).forEach(function(k){cloudKeys[k]=true;});
+      // Apply deletions: keys that were in cloud last sync but not now
+      var toRemove={};Object.keys(LAST_CLOUD_KEYS).forEach(function(k){if(!cloudKeys[k])toRemove[k]=true;});
+      if(Object.keys(toRemove).length)MY_FOODS=MY_FOODS.filter(function(x){return !toRemove[foodKey(x.name)];});
+      // Merge cloud entries into local (cloud wins by savedAt)
+      Object.keys(data).forEach(function(k){
+        var c=data[k];if(!c||!c.name)return;
+        var idx=-1;for(var i=0;i<MY_FOODS.length;i++){if(foodKey(MY_FOODS[i].name)===k){idx=i;break;}}
+        var entry={name:c.name,cal:c.cal||0,pro:c.pro||0,carb:c.carb||0,fat:c.fat||0,fiber:c.fiber||0,sugar:c.sugar||0,sodium:c.sodium||0,savedAt:c.savedAt||0,savedBy:c.savedBy||""};
+        if(idx<0)MY_FOODS.unshift(entry);
+        else if((c.savedAt||0)>(MY_FOODS[idx].savedAt||0))MY_FOODS[idx]=entry;
+      });
+      // Push local-only foods up (never been in cloud)
+      for(var j=0;j<MY_FOODS.length;j++){
+        var lk=foodKey(MY_FOODS[j].name);
+        if(!cloudKeys[lk]&&!LAST_CLOUD_KEYS[lk]&&MY_FOODS[j].savedAt){
+          cloudSaveFood(MY_FOODS[j]);cloudKeys[lk]=true;
+        }
+      }
+      LAST_CLOUD_KEYS=cloudKeys;saveKey(PFX+'cloudkeys',LAST_CLOUD_KEYS);
+      if(MY_FOODS.length>500)MY_FOODS=MY_FOODS.slice(0,500);
+      saveKey(PFX+"myfoods",MY_FOODS);
+      if(CV==="fuel")renderMyFoods();
+    })
+    .catch(function(e){console.warn("Cloud food load failed:",e);});
+}
+function removeFromMyFoods(name){
+  MY_FOODS=MY_FOODS.filter(function(x){return x.name!==name;});
+  saveKey(PFX+"myfoods",MY_FOODS);
+  cloudDeleteFood(name);
+  renderMyFoods();
+}
+window.syncMyFoodsToCloud=cloudSaveFood;
+// ============ END FAMILY FOOD SYNC ============
+
+// Barcode Scanner
+var zxingReader=null;
+function openScanner(){
+  if(!window.ZXingBrowser){showToast("Scanner not loaded - check connection");return;}
+  var modal=gel("scanner-modal");if(!modal)return;
+  modal.style.display="flex";
+  gel("scanner-status").textContent="Point camera at the UPC barcode";
+  try{
+    zxingReader=new ZXingBrowser.BrowserMultiFormatReader();
+    zxingReader.decodeFromVideoDevice(undefined,"scanner-video",function(result,err){
+      if(result){
+        var code=result.getText();
+        if(zxingReader){try{zxingReader.reset();}catch(e){}}
+        gel("scanner-status").textContent="Looking up "+code+"...";
+        lookupBarcode(code);
+      }
+    }).catch(function(e){gel("scanner-status").textContent="Camera error - allow camera access and reload";});
+  }catch(e){gel("scanner-status").textContent="Scanner error: "+(e.message||e);}
+}
+function closeScanner(){
+  if(zxingReader){try{zxingReader.reset();}catch(e){}zxingReader=null;}
+  var modal=gel("scanner-modal");if(modal)modal.style.display="none";
+}
+function lookupBarcode(code){
+  fetch("https://world.openfoodfacts.org/api/v2/product/"+encodeURIComponent(code)+".json")
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(data&&data.status===1&&data.product){
+        var p=data.product;var nutr=p.nutriments||{};
+        var name=p.product_name||p.product_name_en||p.generic_name||p.brands||("Item "+code);
+        if(p.brands&&name.toLowerCase().indexOf(p.brands.toLowerCase())<0)name=p.brands+" "+name;
+        var sv=parseFloat(p.serving_quantity);var hasServing=!isNaN(sv)&&sv>0;
+        var per=hasServing?"_serving":"_100g";
+        function pick(k){return nutr[k+per]||(per==="_serving"?(nutr[k+"_100g"]||0)*sv/100:0)||0;}
+        var cal=Math.round(nutr["energy-kcal"+per]||(per==="_serving"?(nutr["energy-kcal_100g"]||0)*sv/100:0)||0);
+        var pro=Math.round(pick("proteins"));
+        var carb=Math.round(pick("carbohydrates"));
+        var fat=Math.round(pick("fat"));
+        var fib=Math.round(pick("fiber")*10)/10;
+        var sug=Math.round(pick("sugars")*10)/10;
+        var sod=Math.round(pick("sodium")*1000);
+        if(!sod){var salt=pick("salt");if(salt)sod=Math.round(salt*400);}
+        var label=hasServing&&p.serving_size?name+" ("+p.serving_size+")":(hasServing?name:name+" (per 100g)");
+        closeScanner();
+        if(CV!=="fuel")goTo("fuel");
+        setNutTab("meals");setFoodTab("custom");
+        gel("cname").value=label;
+        gel("ccal").value=cal||"";
+        gel("cpro").value=pro||"";
+        gel("ccarb").value=carb||"";
+        gel("cfat").value=fat||"";
+        gel("cfib").value=fib||"";
+        gel("csug").value=sug||"";
+        gel("csod").value=sod||"";
+        showToast("FOUND - REVIEW & ADD");
+      }else{
+        gel("scanner-status").textContent="Not in database - try manual entry";
+        setTimeout(function(){closeScanner();if(CV!=="fuel")goTo("fuel");setNutTab("meals");setFoodTab("custom");showToast("Not in database");},1400);
+      }
+    })
+    .catch(function(e){gel("scanner-status").textContent="Lookup failed - check connection";setTimeout(closeScanner,2000);});
+}
+var WGOAL=14;
+var TODAY=new Date().toLocaleDateString('en-US');
+var DOW=[6,0,1,2,3,4,5];
+var TI=DOW[new Date().getDay()];
+var ST=loadKey(PFX+'stats',{height:'',weight:'',target:''});
+var WL=loadKey(PFX+'logs',[]);
+var WA=loadKey(PFX+'water',{});
+var LP=loadKey(PFX+'liftprs',{});
+var RP=loadKey(PFX+'runprs',{});
+var ML=loadKey(PFX+'meals',{});
+var EW=loadKey(PFX+'exweights',{});
+var MY_FOODS=loadKey(PFX+'myfoods',[]);
+var CV='home',CPT='gym',CDAY=null,PRTAB='lifts',NT='meals',FT='search',SC=1;
+
+(function(){
+  var h=gel('inh'),w=gel('inw');
+  if(h)h.value=ST.height||'';
+  if(w)w.value=ST.weight||'';
+  var t=gel('int');if(t)t.value=ST.target||'';
+  WL=WL.filter(function(l){return daysAgo(l.date)<=30;});
+})();
+resetSets();setPRTab('lifts');renderHome();renderWater();
+cloudLoadFoods();
+setInterval(cloudLoadFoods,30000);
+</script></body></html>
